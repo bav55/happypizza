@@ -21,11 +21,11 @@
                             <thead>
                             <tr>
                                 <td><strong>id</strong></td>
-                                <td><strong>good_title</strong></td>
-                                <td><strong>portion_title</strong></td>
-                                <td><strong>portion_price</strong></td>
-                                <td><strong>frontpad_article</strong></td>
-                                <td><strong>frontpad_title</strong></td>
+                                <td><strong>Название<br>Сайт</strong></td>
+                                <td><strong>Название<br>порции</strong></td>
+                                <td><strong>Стоимость<br>порции</strong></td>
+                                <td><strong>Артикул<br>FrontPad</strong></td>
+                                <td><strong>Название<br>FrontPad</strong></td>
                                 <td></td><td></td>
                             </tr>
                             </thead>

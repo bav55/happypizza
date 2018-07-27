@@ -113,7 +113,9 @@ class GoodSizePriceController extends Controller
         //dd($data);
         if($data['result'] == 'success'){
             $frontpad_products = [];
-            $gsp = Good_Size_Price::all();
+            //$gsp = Good_Size_Price::all();
+            $gsp = Good_Size_Price::join('goods', 'goods.id', '=', 'good__size__prices.good_id')->orderBy('goods.title','desc')->select('good__size__prices.*')->with('good')->get();
+            //dd($gsp);
             for($i = 0; $i < count($data['product_id']); $i++){
                 $frontpad_products[$data['product_id'][$i]] = ['product_id' => $data['product_id'][$i], 'name' => $data['name'][$i], 'price' => $data['price'][$i]];
             }
@@ -131,16 +133,12 @@ class GoodSizePriceController extends Controller
                     if($key1 != false) $frontpad_str[$key1] = 'ТРАДИЦИОННОЕ';
                     $arr = array_intersect($site_str, $frontpad_str);
                     if(count($arr) == count($frontpad_str) && $frontpad_product['price'] > 0){
-                         echo 'found!';
-                         if($category_name != "Пицца"){
-                             echo 'not pizza!';
-                         }
                         $gsp_found = Good_Size_Price::find($gsp_item->id);
                         $gsp_found->frontpad_article = $frontpad_product['product_id'];
                         $gsp_found->frontpad_title = $frontpad_product['name'];
                         //$gsp->portion_price = $frontpad_product['price'];
                         $gsp_found->save();
-                        break;
+                        //break;
                     }
                 }
             }

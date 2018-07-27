@@ -29,23 +29,23 @@
                         <div class="col-md-9">
                             <div class="box-body pad">
                                 <div class="form-group">
-                                    <label>Frontpad article</label>
+                                    <label>Артикул FrontPad</label>
                                     <input type="text" name="frontpad_article" class="form-control" required placeholder="Frontpad article..." value="{{ $gsp->frontpad_article }}">
                                 </div>
                                 <div class="form-group">
-                                    <label>Frontpad Title</label>
+                                    <label>Название FrontPad</label>
                                     <input type="text" name="frontpad_title" class="form-control"  placeholder="Frontpad title" value="{{ $gsp->frontpad_title }}">
                                 </div>
                                 <div class="form-group">
-                                    <label>good_id: {{ $gsp->good_id }}</label>
+                                    <label>Название товара (сайт, справочно): <strong><i>{{ $gsp->getGoodName($gsp->good) }}</i></strong></label>
                                     <input type="hidden" name="good_id" class="form-control" value="{{ $gsp->good_id }}">
                                 </div>
                                 <div class="form-group">
-                                    <label>portion_id: {{ $gsp->portion_id }}</label>
+                                    <label>Название порции (сайт, справочно): <strong><i>{{ $gsp->getPortionName($gsp->portion) }}</i></strong></label>
                                     <input type="hidden" name="portion_id" class="form-control" value="{{ $gsp->portion_id }}">
                                 </div>
                                 <div class="form-group">
-                                    <label>portion_price: {{ $gsp->portion_price }}</label>
+                                    <label>Стоимость порции (сайт, справочно): <strong><i>{{ $gsp->portion_price }}</i></strong></label>
                                     <input type="hidden" name="portion_price" class="form-control" value="{{ $gsp->portion_price }}">
                                     <input type="hidden" name="id" class="form-control" value="{{ $gsp->id }}">
                                 </div>

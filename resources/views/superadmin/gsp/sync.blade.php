@@ -1,5 +1,5 @@
 @extends('layouts.admin')
 
 @section('content')
-    <h2>This is Sync Page</h2>
+    <h3>Синхронизация товаров с FrontPad выполнена успешно!</h3>
 @endsection
