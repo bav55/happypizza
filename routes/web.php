@@ -20,7 +20,8 @@ Route::group(['prefix' => 'ip5woctv9f990lc'], function() {
         Route::resource('portions', 'Superadmin\PortionsController', ['middleware' => 'role:superadmin', 'only' => ['index','create','destroy','edit','update','store']] );
         Route::resource('preferences', 'Superadmin\PreferencesController', ['middleware' => 'role:superadmin', 'only' => ['index','create','destroy','edit','update','store']] );
         Route::resource('ingredients', 'Superadmin\IngredientsController', ['middleware' => 'role:superadmin', 'only' => ['index','create','destroy','edit','update','store']] );
-        
+        Route::get('frontpad/sync', 'Superadmin\GoodSizePriceController@sync', ['middleware' => 'role:superadmin']);
+        Route::resource('frontpad', 'Superadmin\GoodSizePriceController', ['middleware' => 'role:superadmin'] );
         Route::resource('recomend', 'Superadmin\RecomendController', ['middleware' => 'role:superadmin', 'only' => ['index','create','destroy','edit','update','store']] );
         
         Route::resource('subscriptions', 'Superadmin\SubscriptionController', ['middleware' => 'role:superadmin', 'only' => ['index','destroy']] );

@@ -281,7 +281,7 @@
     <div class="container">
         <div class="row">
             <div class="col-xs-6">
-                <p class="copyright">&copy; 2017 | Happy Pizza</p>
+                <p class="copyright">&copy; 2018 | Happy Pizza</p>
             </div>
             <div class="col-xs-6">
                 
@@ -300,6 +300,7 @@
 <script src="{{ asset('tpl/js/bootstrap.min.js') }}"></script>
 <script src="{{ asset('tpl/js/maskedinput.js') }}"></script>
 <script src="{{ asset('tpl/js/main.js') }}"></script>
+
 @if (Auth::guest()) <script src="{{ asset('tpl/js/user.js') }}"></script> @endif
 @yield('script')
 <a href="#" class="to-top" id="to-top"></a>

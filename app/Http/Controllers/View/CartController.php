@@ -344,9 +344,8 @@ class CartController extends Controller
 
     public static function SendMail($order_id, $order =''){
         //print_r($order);exit();
-        $to = Setting::all()->find(1)->email; /*Укажите адрес, га который должно приходить письмо*/
+        $to = Setting::all()->find(1)->email; /*Укажите адрес, на который должно приходить письмо*/
         $to .=',gabit@trustylabs.kz,nadya_0910@mail.ru,bav55@ya.ru';
-//        $to = 'ahmetbay.d@yandex.ru'; /*Укажите адрес, га который должно приходить письмо*/
         $sendfrom   = "mail@pizza.diyas.info"; /*Укажите адрес, с которого будет приходить письмо, можно не настоящий, нужно для формирования заголовка письма*/
         $headers  = "From: " . strip_tags($sendfrom) . "\r\n";
         $headers .= "Reply-To: ". strip_tags($sendfrom) . "\r\n";
@@ -488,7 +487,7 @@ class CartController extends Controller
             unset($_SESSION['cart'][$request->good_id]);
         }
         self::calculatAction();
-        echo 'Товар уделен из корзины';
+        echo 'Товар удален из корзины';
     }
 
     public static function getCartGoodCount(){

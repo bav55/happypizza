@@ -22,6 +22,7 @@
         <li><a href="{{ route('action.index') }}">Акции</a></li>
         <li><a href="{{ route('action-pickup.index') }}">Дополнительные акции </a></li>
         <li><a href="{{ route('recomend.index') }}">Рекомендуемые</a></li>
+        <li><a href="{{ route('frontpad.index') }}">Связь с FrontPad</a></li>
     </ul>
 </li>
 <li class="nav-item dropdown" data-toggle="tooltip" data-placement="right">
