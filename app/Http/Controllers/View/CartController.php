@@ -24,7 +24,8 @@ class CartController extends Controller
 {
 
     public function cartPage(){
-//        dump($_SESSION['cart']);
+        dump($_SESSION['cart']);
+        dump($_SESSION);
         $goods = isset($_SESSION['cart']) ? $_SESSION['cart'] : null;
         $promo = count(PromoCod::all());
         self::calculatAction();
@@ -189,6 +190,7 @@ class CartController extends Controller
         
 
         $order = Order::create($data);
+        self::setOrderInfoToFrontPad();
        if(Auth::check()){
            if (!$bonus_off) {
                 $order->getBonusLog()->create([
@@ -561,10 +563,11 @@ class CartController extends Controller
 
         if (isset($_SESSION['cart'])) {
             $cart = $_SESSION['cart'];
-//            foreach ($actions as $action) {
-//                //dump(json_decode($action->action));
-//            }
-//            //dump($cart);
+            /*foreach ($actions as $action) {
+                dump(json_decode($action->action));
+            }
+            dump($cart);
+            */
             /*
             1. Один и тот же товар в одном и том же количестве не может учавствовать в разных акциях.
             2. В одной акции могут учавствовать несколько товаров из корзины.
@@ -582,16 +585,16 @@ class CartController extends Controller
                 foreach ($cart_v as $cart_v_i => $cart_v_v) {
                     //dump($cart_v_v);
                     //$cart_good[]=$cart_v_v['good'];
-                    $cart_good[] = array("good_id" => $cart_v_v['good']["good_id"], "size_id" => (string)ApiController::getPortioninSezeId($cart_v_v['good']["size_id"])['portion']);
+ /*!!! bav55*/      $cart_good[] = array("good_id" => $cart_v_v['good']["good_id"], "size_id" => (string)ApiController::getPortioninSezeId($cart_v_v['good']["size_id"])['portion']);
                     $cart_good_count[] = $cart_v_v['good']["count"];
                 }
             }
 			
-            /*
-            echo 'Товар в корзине<br>';
-            dump($cart_good);
-			dump($cart_good_count);
-            */
+
+echo 'Товар в корзине<br>';
+dump($cart_good);
+dump($cart_good_count);
+
 
             //Нормируем товар в акциях
             $act_good = array();
@@ -629,12 +632,12 @@ class CartController extends Controller
             //dump($act_product_in_input_count);
             //dump($act_product_in_input_povtorenie_check);exit();
 //dd($act_good_id_input);
-            /*
+/*
             echo 'Товар в акциях<br>';
             dump($act_good);
 			dump($act_good_count);
 			dump($act_repeat);
-            */
+*/
 
             //Ищем совпадения товаров из корзины в акциях
             $mtch = array();
@@ -684,7 +687,8 @@ class CartController extends Controller
                 }
             }
             //Акции, в которых товары найдены
-            /*echo 'Акции, в которых товары найдены<br>';
+/*
+            echo 'Акции, в которых товары найдены<br>';
             dump($mtch);
             //Совпадения и количество по акциям
             echo 'Совпадения и количество по акциям<br>';
@@ -697,8 +701,8 @@ class CartController extends Controller
             dump($act_sum);
             //Флаг повторения
             echo 'Флаг повторения<br>';
-            dump($act_good_repeat);*/
-
+            dump($act_good_repeat);
+*/
 
             /**/
             //Количество товаров в акциях
@@ -716,7 +720,7 @@ class CartController extends Controller
             
             
             
-            /*echo 'Количество товаров в акциях:<br>';    
+            /*echo 'Количество товаров в акциях:<br>';
             dump($act_count);
             echo 'Стоимость товаров в акциях:<br>'; 
             dump($act_price);
@@ -847,35 +851,35 @@ dump($act_count);*/
                             $mtch_act_sum=$mtch_act_sum_res;
                         }
                     }
-                    //echo 'Акция  '.$mtch_v.' не прошла, откат массива <br>';
+                    echo 'Акция  '.$mtch_v.' не прошла, откат массива <br>';
                 }
                 else {
-                    /*echo "j = ".$j."<br>";
+                    echo "j = ".$j."<br>";
                     echo "act_count mtch_v - ".$act_count[$mtch_v]."<br>";
-                    echo 'Акция  '.$mtch_v.' ПРОХОДИТ<br>';
-                    dump($mtch_cart_sum);*/
+                    echo 'Акция  '.$mtch_v.' ПРОХОДИТ<br>ProductsInActionInputCountNow<br>';
+                    dump($ProductsInActionInputCountNow);
                 }
                 //dump($mtch_cart_sum);
 
             }
 
-            /*
+
             echo 'После обработки:<br>';   
             dump($mtch_cart_sum);
             dump($mtch);
-            dump($mtch_act_sum);*/
-
-
-
+            dump($mtch_act_sum);
 
             //Расчёт антикорзины
             if(!isset($act_cart)) $act_cart = array();
+    //dump($mtch);
+            $frontpad_array = array();
             foreach (array_unique($mtch) as $mtch_i => $mtch_v) {
+                echo 'anti-cart:foreach => $mtch_i='.$mtch_i.', $mtch_v='.$mtch_v.'\n';
                 $action_obj = Action::all()->find($mtch_v);
                 $_SESSION['action_title'][] = $action_obj->title;
                 if ($action_obj->is_sum == true) {
-                    //echo 'сумма';
-                    //echo $action->total;
+                    echo 'сумма';
+                    echo $action_obj->total;
                     $act_cart[] = $act_price[$mtch_v] - ($action_obj->total);
                 } elseif ($action_obj->is_percent == true) {
                     //echo 'Процент';
@@ -889,7 +893,7 @@ dump($act_count);*/
                     
                 }
             }
-            
+            if(count($mtch) == 0) break;
            
 
 }           
@@ -917,7 +921,11 @@ dump($act_count);*/
         }
     }
 
-
+    public function setOrderInfoToFrontPad(){
+        self::calculatAction();
+        //filled $_SESSION['frontpad']
+        //now, create POST-query to API FrontPad for create an order into FrontPad
+    }
 
 
 

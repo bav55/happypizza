@@ -126,13 +126,18 @@ class GoodSizePriceController extends Controller
                 if(isset($gsp_item->good->category)) $category_name = Category::getCategoryName($gsp_item->good->category);
                 //preg_match_all('/[а-яА-Я0-9]+/u', $product_name.' '.$portion_name, $site_str, PREG_SET_ORDER, 0);
                 $site_str = explode(' ', str_replace(['.',',','(',')'],'',mb_strtoupper($product_name.' '.$portion_name, 'UTF-8')));
+                if($category_name == "Закуски"){
+                    echo 'закуски!';
+                }
                 foreach($frontpad_products as $article => $frontpad_product){
                     //preg_match_all('/[а-яА-Я0-9]+/u', $frontpad_product['name'], $frontpad_str, PREG_SET_ORDER, 0);
                     $frontpad_str = explode(' ', str_replace(['.',',','(',')'],'',mb_strtoupper($frontpad_product['name'],'UTF-8')));
                     $key1 = array_search('ТРАДИЦ', $frontpad_str);
                     if($key1 != false) $frontpad_str[$key1] = 'ТРАДИЦИОННОЕ';
                     $arr = array_intersect($site_str, $frontpad_str);
-                    if(count($arr) == count($frontpad_str) && $frontpad_product['price'] > 0){
+                    if((count($arr) == count($frontpad_str) && $frontpad_product['price'] > 0)
+                    || ($category_name != "Пицца" && $category_name != "На компанию" && $frontpad_product['price'] > 0 && count($arr) == count($frontpad_str) -1 and count($arr) > 1)
+                    ){
                         $gsp_found = Good_Size_Price::find($gsp_item->id);
                         $gsp_found->frontpad_article = $frontpad_product['product_id'];
                         $gsp_found->frontpad_title = $frontpad_product['name'];
