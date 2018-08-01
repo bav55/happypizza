@@ -24,8 +24,8 @@ class CartController extends Controller
 {
 
     public function cartPage(){
-        dump($_SESSION['cart']);
-        dump($_SESSION);
+        //dump($_SESSION['cart']);
+       // dump($_SESSION);
         $goods = isset($_SESSION['cart']) ? $_SESSION['cart'] : null;
         $promo = count(PromoCod::all());
         self::calculatAction();
@@ -180,17 +180,25 @@ class CartController extends Controller
         if ( !isset($data['delivery_zone']) ){
             $data['delivery_zone'] = '';
         }
-        
-        
-        if ($data['pay_type_id'] == 1){
+
+        $fp_result = self::setOrderInfoToFrontPad($request);
+        if($fp_result['result'] == 'success'){
+            //an Order has successfully created in frontPad
+            $data['frontpad_order_id'] = $fp_result['order_id'];
+            $data['frontpad_order_number'] = $fp_result['order_number'];
+        }
+        else{
+            // an Order hasn't created in frontPad.
+        }
+        if (($data['pay_type_id'] == 1) || ($data['pay_type_id'] == 3)){
             $data['is_paid'] = true;
-            session_unset();
+            //session_unset();
         }
         
         
 
         $order = Order::create($data);
-        self::setOrderInfoToFrontPad();
+
        if(Auth::check()){
            if (!$bonus_off) {
                 $order->getBonusLog()->create([
@@ -238,15 +246,15 @@ class CartController extends Controller
        // print_r($order_mail);
         /* END for send mail */
 //print_r($order_mail);exit();
-        if ($data['pay_type_id'] == 1){
+        if ($data['pay_type_id'] == 1 || $data['pay_type_id'] == 3){
             self::SendMail($order->id, $order_mail);
         }
 
-        if (Auth::check() && $data['pay_type_id'] == 1){
+        if (Auth::check() && ($data['pay_type_id'] == 1 || $data['pay_type_id'] == 3)){
             $sms_messagedata = 'Ваш+заказ+'.$order->order_id.'+оформлен+на+сайте+happypizza.kz.Зачислено'.$cach_back.'+баллов.+Всего+'.$order->bonus_sum.'+баллов.';
             self::SendSMS($data['phone'], $sms_messagedata);
         }
-        elseif (Auth::guest() && $data['pay_type_id'] == 1){
+        elseif (Auth::guest() && ($data['pay_type_id'] == 1 || $data['pay_type_id'] == 3)){
             $sms_messagedata = 'Спасибо за заказ! Ваша заявка в обработке. Для подтверждения заказа с вами свяжется оператор.';
             self::SendSMS($data['phone'], $sms_messagedata);
         }
@@ -552,11 +560,12 @@ class CartController extends Controller
 
     }
 
-    public static function calculatAction(){
+    public static function calculatAction($finale = false){
         unset($_SESSION['act_sum']);
         unset($_SESSION['present']);
         unset($_SESSION['add_present_action']);
         unset($_SESSION['action_title']);
+        unset($_SESSION['frontpad']);
 
         $actions = Action::where('date_at','<',date('Y-m-d').'00:00:00')
             ->where('date_to','>',date('Y-m-d').'23:59:59')->get();
@@ -590,12 +599,16 @@ class CartController extends Controller
                 }
             }
 			
-
+/*
 echo 'Товар в корзине<br>';
 dump($cart_good);
 dump($cart_good_count);
-
-
+*/
+if($finale){ //finale countdown before send order to frontPad
+    $cart_good_copy = $cart_good;
+    $cart_good_count_copy = $cart_good_count;
+    $_SESSION['frontpad'] = array();
+}
             //Нормируем товар в акциях
             $act_good = array();
             $act_good_count = array();
@@ -851,35 +864,64 @@ dump($act_count);*/
                             $mtch_act_sum=$mtch_act_sum_res;
                         }
                     }
-                    echo 'Акция  '.$mtch_v.' не прошла, откат массива <br>';
+                    //echo 'Акция  '.$mtch_v.' не прошла, откат массива <br>';
                 }
                 else {
-                    echo "j = ".$j."<br>";
+                   /* echo "j = ".$j."<br>";
                     echo "act_count mtch_v - ".$act_count[$mtch_v]."<br>";
                     echo 'Акция  '.$mtch_v.' ПРОХОДИТ<br>ProductsInActionInputCountNow<br>';
                     dump($ProductsInActionInputCountNow);
+                   */
+                    if($finale){ //finale countdown before send order to frontPad
+                        $cur_action = Action::all()->find($mtch_v);
+                        $action_frontpadArticle = $cur_action->frontpad_article;
+                        $action_frontpadPrice = $cur_action->frontpad_price;
+                        $_SESSION['frontpad']['products'][] = $action_frontpadArticle;
+                        $product_key = count($_SESSION['frontpad']['products']) - 1;
+                        $_SESSION['frontpad']['product_kol'][$product_key] = 1;
+                        $_SESSION['frontpad']['product_price'][$product_key] = $action_frontpadPrice;
+                        foreach($ProductsInActionInputCountNow[$cur_action->id][1] as $key => $product_str){
+                            $product = explode('_',$product_str);
+                            $gsp = Good_Size_Price::select('good_id', 'portion_id', 'frontpad_article')->whereGood_idAndPortion_id($product[0], $product[1])->first();
+                            $gsp_frontpadArticle = $gsp->frontpad_article;
+                            //add a product to array and as modificator
+                            $_SESSION['frontpad']['products'][] = $gsp_frontpadArticle;
+                            $product_key2 = count($_SESSION['frontpad']['products']) - 1;
+                            $_SESSION['frontpad']['product_kol'][$product_key2] = 1;
+                            $_SESSION['frontpad']['product_price'][$product_key2] = 0;
+                            $_SESSION['frontpad']['product_mod'][$product_key2] = $product_key;
+                            foreach($cart_good_copy as $key_good => $cart_good){
+                                if($cart_good['good_id'] == $product[0] && $cart_good['size_id'] == $product[1]){
+                                    $count_good = $cart_good_count_copy[$key_good];
+                                    if($count_good > 0) $cart_good_count_copy[$key_good]-=1;
+                                    else unset($cart_good_count_copy[$key_good]);
+                                }
+                            }
+                        }
+                    }
                 }
                 //dump($mtch_cart_sum);
 
             }
 
 
-            echo 'После обработки:<br>';   
+           /* echo 'После обработки:<br>';
             dump($mtch_cart_sum);
             dump($mtch);
             dump($mtch_act_sum);
+            */
 
             //Расчёт антикорзины
             if(!isset($act_cart)) $act_cart = array();
     //dump($mtch);
             $frontpad_array = array();
             foreach (array_unique($mtch) as $mtch_i => $mtch_v) {
-                echo 'anti-cart:foreach => $mtch_i='.$mtch_i.', $mtch_v='.$mtch_v.'\n';
+               // echo 'anti-cart:foreach => $mtch_i='.$mtch_i.', $mtch_v='.$mtch_v.'\n';
                 $action_obj = Action::all()->find($mtch_v);
                 $_SESSION['action_title'][] = $action_obj->title;
                 if ($action_obj->is_sum == true) {
-                    echo 'сумма';
-                    echo $action_obj->total;
+                   // echo 'сумма';
+                   // echo $action_obj->total;
                     $act_cart[] = $act_price[$mtch_v] - ($action_obj->total);
                 } elseif ($action_obj->is_percent == true) {
                     //echo 'Процент';
@@ -910,7 +952,21 @@ dump($act_count);*/
             
            
             /*--- End ---*/
-            
+            if($finale){
+                //add products without actions into frontpad
+                foreach($cart_good_count_copy as $key => &$value){
+                    if((int)$value > 0){
+                        $gsp = Good_Size_Price::select('good_id', 'portion_id', 'frontpad_article', 'portion_price')->whereGood_idAndPortion_id($cart_good_copy[$key]['good_id'], $cart_good_copy[$key]['size_id'])->first();
+                        $gsp_frontpadArticle = $gsp->frontpad_article;
+                        $_SESSION['frontpad']['products'][] = $gsp_frontpadArticle;
+                        $product_key2 = count($_SESSION['frontpad']['products']) - 1;
+                        $_SESSION['frontpad']['product_kol'][$product_key2] = (int)$value;
+                        $_SESSION['frontpad']['product_price'][$product_key2] = $gsp->portion_price;
+                        $value = 0;
+                    }
+                }
+            }
+            //------------------------------------------
             $_SESSION['act_sum'] = $act_cart;
 
             /*
@@ -921,10 +977,68 @@ dump($act_count);*/
         }
     }
 
-    public function setOrderInfoToFrontPad(){
-        self::calculatAction();
-        //filled $_SESSION['frontpad']
+    public function setOrderInfoToFrontPad(Request $request){
+        self::calculatAction(true);
+        $data = $request->except(['_token']);
+        if(isset($data['extra']['time'])){
+            $date_str = date('Y-m-d').' '.$data['extra']['time'].':00';
+        }
+        else{
+            $date_str = date('Y-m-d H:i:s', strtotime("+2 hours"));
+        }
+        if(isset($data['delivery']['Код домофона'])) $data['extra']['comment'] .= '; код домофона: '.$data['delivery']['Код домофона'];
+        if(isset($data['pay_type_id'])){
+            $pay = Pay_Type::select('title')->whereId($data['pay_type_id'])->first();
+            $data['extra']['comment'] .= '; способ оплаты: '.$pay->title;
+            if($data['pay_type_id'] == 1 && isset($data['extra']['money'])){
+                $data['extra']['comment'] .= '; Нужна сдача с '.$data['extra']['money'];
+            }
+        }
         //now, create POST-query to API FrontPad for create an order into FrontPad
+        $client_param = array(
+            'secret' => 'ihYN4HbYFGnGkdhB4ezbhBG7KsTQr4ZDaGb4deKHN3d35nnYyNZEbsBNKfr49as9Gy4NBDhbrn4hEe52TQsY7SyF3Ny2QQ2i8QZze7ByhsFQzzBe9S37AiBkZZaBA2KyDyTGrf5BAzbZTE4TiSQH5dYR4YdnHQKa9tGnDBR32SNGhErti54b8NS2zZb7AN7z7ENz5riS82kfsDBDysEt6ies7hktYfSRNtbFKniGazQs3dThzkDrzHHtSY',
+            'name' => $data['name'],
+            'phone' => $data['phone'],
+            'mail' => $data['email'],
+            'descr' => $data['extra']['comment'],
+            'datetime' => $date_str,
+            'channel' => 895, //Сайт
+            'point' => ($data['delivery_type_id'] == 1)? 365: 364,
+            'street' => $data['delivery']['Улица'],
+            'home' => $data['delivery']['Дом'],
+            'pod' => $data['delivery']['Подъезд'],
+            'et' => $data['delivery']['Этаж'],
+            'apart' => $data['delivery']['Квартира'],
+            //'card' => '',
+            //'score' => '',
+            //'sale' => '',
+            //'sale_amount' => '',
+            //'certificate' => '',
+        );
+        $post_data = http_build_query($client_param);
+        foreach ($_SESSION['frontpad']['products'] as $key => $value){
+            $post_data .= "&product[".$key."]=".$value."";
+            $post_data .= "&product_kol[".$key."]=".$_SESSION['frontpad']['product_kol'][$key]."";
+            $post_data .= "&product_price[".$key."]=".$_SESSION['frontpad']['product_price'][$key]."";
+            if(isset($_SESSION['frontpad']['product_mod'][$key])) {
+                $post_data .= "&product_mod[".$key."]=".$_SESSION['frontpad']['product_mod'][$key]."";
+            }
+        }
+        //send api-call new_order to frontPad
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, "https://app.frontpad.ru/api/index.php?new_order");
+        curl_setopt($ch, CURLOPT_FAILONERROR, 1);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER,1);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $post_data);
+        $result = curl_exec($ch);
+        curl_close($ch);
+
+        //return result
+        return json_decode($result, true);
     }
 
 

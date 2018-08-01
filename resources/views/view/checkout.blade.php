@@ -105,8 +105,9 @@
                 <div class="row">
                     <div class="col-xs-12">
                         <div class="btn-group btn-group-happypizza" role="group" aria-label="...">
-                            <input type="button" data-type="1" class="pay_type_id btn btn-default btn-left btn-active" value="Наличными">
-                            <input type="button" data-type="2" class="pay_type_id btn btn-default btn-right" value="Банковской картой">
+                            <input type="button" data-type="1" class="pay_type_id btn btn-default btn-left btn-active" value="Наличными при получении">
+                            <input type="button" data-type="3" class="pay_type_id btn btn-default" value="Оплата картой при получении">
+                            <input type="button" data-type="2" class="pay_type_id btn btn-default btn-right" value="Оплата картой онлайн">
                         </div>
                     </div>
                 </div>
