@@ -133,30 +133,30 @@ class CartController extends Controller
                 $_SESSION['present'][] = ["count" => "1","good" =>"16"];
                 $_SESSION['add_present_action'] = true;
             }*/
-            $user_bonus = user_bonus::where('user_id',Auth::user()->id)->get();
-            
-            
-            
-            if (isset($request->extra['bonus']) && $request->extra['bonus'] != null && !$bonus_off){
-                $data['apply_bonus_sum'] = $request->extra['bonus'];
+            $user_bonus = user_bonus::where('user_id',Auth::user()->id)->get()->first();
+
+
+            if (empty($data['extra']['bonus']) && $data['extra']['bonus'] == null) $data['extra']['bonus'] = 0; //если бонусами оплачивать не будет
+            if (isset($data['extra']['bonus']) && $data['extra']['bonus'] != null && !$bonus_off){ //оплачивает часть заказа бонусами
+                $data['apply_bonus_sum'] = $data['extra']['bonus'];
                 $apply_bonus_sum = $data['apply_bonus_sum'];
                 $data['order_sum'] =  (int)$cart_sum - (int)$apply_bonus_sum;
-                $user_end_bonus = (int)$user_bonus[0]->bonus - (int)$apply_bonus_sum;
+                $user_end_bonus = (int)$user_bonus->bonus - (int)$apply_bonus_sum;
                 $cach_back = (int)$data['order_sum']/100 * (int)$bonus_percent;
                 $data['bonus_sum'] = $user_end_bonus + $cach_back;
                 $data['bonus_sum'] = floor($data['bonus_sum']);
                 $data['extra']['cashback'] = $cach_back;
             } elseif(!$bonus_off) {
                 $cach_back = (int)$cart_sum/100 *(int)$bonus_percent;
-                $data['bonus_sum'] = $cach_back;
+                $data['bonus_sum'] = $user_bonus->bonus + $cach_back;
             }
             else {
                 $cach_back = 0;
-                $data['bonus_sum'] = $user_bonus[0]->bonus;      
+                $data['bonus_sum'] = $user_bonus->bonus;
             }
 
-            if ($data['pay_type_id'] == 1){
-                user_bonus::all()->find($user_bonus[0]->id)->update(['bonus' => $data['bonus_sum']]);
+            if ($data['pay_type_id'] == 1 || $data['pay_type_id'] == 3){
+                user_bonus::updateOrCreate(['user_id' => $user_bonus->user_id],['bonus' => $data['bonus_sum']]);
             }
         }
         if ( !isset($data['order_sum']) ){
@@ -204,8 +204,12 @@ class CartController extends Controller
                 $order->getBonusLog()->create([
                     'order_id' => $order->id, 
                     'user_id' => $order->user_id,
-                    'bonus' => $cach_back
+                    'bonus' => $cach_back,
+                    'notes' => 'Начисление бонусов за заказ '.$order->order_id,
                 ]);
+                if($data['apply_bonus_sum'] > 0){
+                    //логируем списание бонусов в счет оплаты заказа
+                }
            }
        }        
         $return = array(

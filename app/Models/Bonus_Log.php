@@ -12,7 +12,7 @@ class bonus_log extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'order_id','user_id','bonus'
+        'order_id','user_id','bonus','notes'
     ];
 
 	

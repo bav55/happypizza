@@ -7,6 +7,9 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Foundation\Auth\RegistersUsers;
 use App\Models\User_Role;
+use App\Models\Bonus_Log;
+use App\Models\Setting;
+use App\Models\user_bonus;
 
 class RegisterController extends Controller
 {
@@ -51,7 +54,8 @@ class RegisterController extends Controller
         return Validator::make($data, [
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
-            'phone' => 'required|phone|unique:users',
+            //'phone' => 'required|phone|unique:users',
+            'phone' => 'required|unique:users',
             'password' => 'required|string|min:6|confirmed',
         ]);
     }
@@ -70,9 +74,24 @@ class RegisterController extends Controller
         $user->email = $data['email'];
         $user->phone = $data['phone'];
         $user->password = bcrypt($data['password']);
+        if(isset($data['referer_id']) && User::find($data['referer_id']))   $user->referer_id = $data['referer_id'];
         $user->save();
+        //Добавим бонусы рефереру за регистрацию по его партнерской ссылке
+        $referer_bonus_sum = Setting::all()->find(1)->referer_bonus_sum;
+        $user_bonus = user_bonus::where('user_id',$user->referer_id)->get()->first();
+        $bonus_exist = isset($user_bonus->bonus)? (int)$user_bonus->bonus : 0;
+        $new_sum_bonus = $bonus_exist + $referer_bonus_sum;
+        user_bonus::updateOrCreate(['user_id' => $user->referer_id],['bonus' => $new_sum_bonus]);
+        //запишем информацию в журнал
+        Bonus_Log::create([
+            'order_id' => 0,
+            'user_id' => $user->referer_id,
+            'bonus' => $referer_bonus_sum,
+            'notes' => 'Начисление бонусов за регистрацию по партнерской ссылке (пользователь: '.$user->name.' ('.$user->phone.')',
+        ]);
 
-        /* присвоение роли "клиетн" для нового пользователя */
+
+        /* присвоение роли "клиент" для нового пользователя */
         $role = new User_Role;
         $role->user_id = $user->id;
         $role->role_id = '3';

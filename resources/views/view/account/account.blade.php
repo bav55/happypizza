@@ -23,7 +23,11 @@
                             <div class="col-xs-4"><span style="color: #969696">{{ $user->created_at }}</span></div>
                             <div class="col-xs-4">&nbsp;</div>
                         </div>
-
+                        <div class="row">
+                            <div class="col-xs-4">Ваша партнерская ссылка</div>
+                            <div class="col-xs-4"><span style="color: #969696"><a href="{{ route('index',['u' => $user->id]) }}">{{ route('index',['u' => $user->id]) }}</a></span></div>
+                            <div class="col-xs-4">&nbsp;</div>
+                        </div>
                         <div class="row">
                             <div class="col-xs-4">Имя&nbsp;* </div>
                             <div class="col-xs-4 account-value">

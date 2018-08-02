@@ -275,10 +275,11 @@ class ApiController extends Controller
         $count = count($arr);
         $i = 1;
         foreach ($arr as $value) {
-            if(isset(Ingredient::all()->find($value['id'])->title)){
+            if(isset(Ingredient::all()->find($value['id'])->title) && $value['port'] > 0){
                 $str .= Ingredient::all()->find($value['id'])->title;
+                $str .= $count != $i ? ', ' : '';
             }
-            $str .= $count != $i ? ', ' : '';
+
             $i++;
         }
         return $str;

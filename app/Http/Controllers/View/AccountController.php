@@ -56,7 +56,7 @@ class AccountController extends Controller
             [
                // 'orders' => Order::where('user_id', Auth::user()->id)->where('is_paid','1')->orderBy('id','desc')->paginate(10)
                'orders' => Order::where('phone', Auth::user()->phone)->where('is_paid','1')->orderBy('id','desc')->paginate(10)
-//                'orders' => Order::where('user_id', Auth::user()->id)->paginate(2)
+               // 'orders' => Order::where('phone', Auth::user()->phone)->where('is_paid','1')->orderBy('id','desc')->skip(0)->take(5)
             ]
         );
     }

@@ -7,6 +7,7 @@ Route::group(['prefix' => 'ip5woctv9f990lc'], function() {
     Route::group(['middleware' => 'guest'], function () {
         Route::get('login', 'Auth\LoginController@index');
         Route::post('login', 'Auth\LoginController@login');
+        Route::post('reg', 'Auth\RegisterController@login');
     });
 
     Route::group(['middleware' => 'auth'], function() {
