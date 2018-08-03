@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\View;
-
+use App\User;
 use App\Models\Delivery_Type;
 use App\Models\Delivery_Zone;
 use App\Models\Order;
@@ -136,7 +136,7 @@ class CartController extends Controller
             $user_bonus = user_bonus::where('user_id',Auth::user()->id)->get()->first();
 
 
-            if (empty($data['extra']['bonus']) && $data['extra']['bonus'] == null) $data['extra']['bonus'] = 0; //если бонусами оплачивать не будет
+            if (empty($data['extra']['bonus']) || $data['extra']['bonus'] == null) $data['extra']['bonus'] = 0; //если бонусами оплачивать не будет
             if (isset($data['extra']['bonus']) && $data['extra']['bonus'] != null && !$bonus_off){ //оплачивает часть заказа бонусами
                 $data['apply_bonus_sum'] = $data['extra']['bonus'];
                 $apply_bonus_sum = $data['apply_bonus_sum'];
@@ -201,14 +201,41 @@ class CartController extends Controller
 
        if(Auth::check()){
            if (!$bonus_off) {
+               $str = 'Начисление бонусов за ваш заказ '.$order->order_id;
+               if($data['apply_bonus_sum']>0) $str .= ', за вычетом использованных '.$data['apply_bonus_sum'].' бонусов';
                 $order->getBonusLog()->create([
                     'order_id' => $order->id, 
                     'user_id' => $order->user_id,
                     'bonus' => $cach_back,
-                    'notes' => 'Начисление бонусов за заказ '.$order->order_id,
+                    'notes' => $str
                 ]);
-                if($data['apply_bonus_sum'] > 0){
+           /* добавляю в лог выше. Может этот закомментированный блок вообще убрать.
+                 if(!empty($data['apply_bonus_sum']))
+                    if($data['apply_bonus_sum'] > 0){
                     //логируем списание бонусов в счет оплаты заказа
+                        $order->getBonusLog()->create([
+                            'order_id' => $order->id,
+                            'user_id' => $order->user_id,
+                            'bonus' => (-1)*(int)$data['apply_bonus_sum'],
+                            'notes' => 'Списание бонусов в счет оплаты заказа '.$order->order_id,
+                        ]);
+                    }
+           */
+                    $referer = User::whereId(Auth::user()->referer_id)->first();
+                    $username = Auth::user()->name;
+                    if(!empty($referer->id)){
+                    //начислить бонусы рефереру за заказ реферала
+                    $referal_order_percent = Setting::all()->find(1)->referal_order_percent;
+                    $referer_bonus = user_bonus::whereUser_id($referer->id)->first()->bonus;
+                    $referer_adding_bonus = (int)$data['order_sum']/100 * (int)$referal_order_percent;
+                    user_bonus::updateOrCreate(['user_id' => $referer->id],['bonus' => (int)$referer_bonus + (int)$referer_adding_bonus]);
+                    //и записать в лог
+                    $order->getBonusLog()->create([
+                        'order_id' => $order->id,
+                        'user_id' => $referer->id,
+                        'bonus' => (int)$referer_adding_bonus,
+                        'notes' => 'Начисление бонусов за заказ '.$order->order_id.'вашего реферала '.$username,
+                    ]);
                 }
            }
        }        

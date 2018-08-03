@@ -6,10 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class bonus_log extends Model
 {
-
     protected $table = 'bonus_log';
 
-    public $timestamps = false;
+    public $timestamps = true;
 
     protected $fillable = [
         'order_id','user_id','bonus','notes'

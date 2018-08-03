@@ -87,7 +87,7 @@ class RegisterController extends Controller
             'order_id' => 0,
             'user_id' => $user->referer_id,
             'bonus' => $referer_bonus_sum,
-            'notes' => 'Начисление бонусов за регистрацию по партнерской ссылке (пользователь: '.$user->name.' ('.$user->phone.')',
+            'notes' => 'Начисление бонусов за регистрацию по партнерской ссылке (пользователь: '.$user->name,//.' ('.$user->phone.')',
         ]);
 
 

@@ -88,6 +88,7 @@ Route::group(['prefix' => 'account'], function() {
         Route::get('/created-pizza', 'View\AccountController@createdPizza')->name('createdPizza');
         Route::post('/update/password', 'View\AccountController@update_password');
         Route::get('/order-history', 'View\AccountController@orderHistory')->name('orderHistory');
+        Route::get('/bonus-history', 'View\AccountController@bonusHistory')->name('bonusHistory');
         Route::get('show-order/{id}', 'View\AccountController@showOrder')->name('showOrder');
 
     });
