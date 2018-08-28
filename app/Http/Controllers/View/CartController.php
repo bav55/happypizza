@@ -25,7 +25,7 @@ class CartController extends Controller
 
     public function cartPage(){
         //dump($_SESSION['cart']);
-       // dump($_SESSION);
+        // dump($_SESSION);
         $goods = isset($_SESSION['cart']) ? $_SESSION['cart'] : null;
         $promo = count(PromoCod::all());
         self::calculatAction();
@@ -82,45 +82,45 @@ class CartController extends Controller
             $data['delivery_address'] = json_encode($data['delivery']);
         }
         $cach_back = null;
-       
-            /*--- Добавление доп подарков в зависимости от заказов ---*/
-            //$action_pickup_obj = ActionPickup::all()->find(1); 
-            $action_pickup_obj = ActionPickup::where('date_at','<',date('Y-m-d').'00:00:00')->where('date_to','>',date('Y-m-d').'23:59:59')->get();
-            foreach ($action_pickup_obj as $pickup) {
-           //dd($pickup->id);exit();
-                if($pickup['is_present'] == 1){
-                    if ($pickup['pickup'] == 1) { // При галке на "Самовывоз?" 
-                          //echo 'pickup';exit();
-                         $user_order_delivery_1 = Order::where('phone', $data['phone'])->where('delivery_type_id', 1)->get();
 
-                         if ((count($user_order_delivery_1)+1)%$pickup->days==0){ //days кратность (В каждом n-м заказе) %3==0
-                            $_SESSION['present'][] = json_decode($pickup->total, true);
-                         }
+        /*--- Добавление доп подарков в зависимости от заказов ---*/
+        //$action_pickup_obj = ActionPickup::all()->find(1);
+        $action_pickup_obj = ActionPickup::where('date_at','<',date('Y-m-d').'00:00:00')->where('date_to','>',date('Y-m-d').'23:59:59')->get();
+        foreach ($action_pickup_obj as $pickup) {
+            //dd($pickup->id);exit();
+            if($pickup['is_present'] == 1){
+                if ($pickup['pickup'] == 1) { // При галке на "Самовывоз?"
+                    //echo 'pickup';exit();
+                    $user_order_delivery_1 = Order::where('phone', $data['phone'])->where('delivery_type_id', 1)->get();
+
+                    if ((count($user_order_delivery_1)+1)%$pickup->days==0){ //days кратность (В каждом n-м заказе) %3==0
+                        $_SESSION['present'][] = json_decode($pickup->total, true);
                     }
-                    else {
-                        $user_order_count = Order::where('phone', $data['phone'])->get();
-                        if ((count($user_order_count)+1)%$pickup->days==0){ //days кратность (В каждом n-м заказе) %3==0
-                            $_SESSION['present'][] = json_decode($pickup->total, true);
-                         }
+                }
+                else {
+                    $user_order_count = Order::where('phone', $data['phone'])->get();
+                    if ((count($user_order_count)+1)%$pickup->days==0){ //days кратность (В каждом n-м заказе) %3==0
+                        $_SESSION['present'][] = json_decode($pickup->total, true);
                     }
                 }
             }
-            /*$user_order_delivery_2 = Order::where('phone', $data['phone'])->get();
-            
-            print_r(count($user_order_delivery_2));
-            print_r($_SESSION['present']);
-            exit();*/
-            // $actions = Action::where('date_at','<',date('Y-m-d').'00:00:00')->where('date_to','>',date('Y-m-d').'23:59:59')->get();
+        }
+        /*$user_order_delivery_2 = Order::where('phone', $data['phone'])->get();
 
-            /*--- End ---*/
-          
-        
+        print_r(count($user_order_delivery_2));
+        print_r($_SESSION['present']);
+        exit();*/
+        // $actions = Action::where('date_at','<',date('Y-m-d').'00:00:00')->where('date_to','>',date('Y-m-d').'23:59:59')->get();
+
+        /*--- End ---*/
+
+
         if(Auth::check()){
-            
+
             $user_order = Order::where('user_id', Auth::user()->id)->where('delivery_type_id','1')->get();
             /*----- Если заказывает в течения 1 час на одну и туже сумму, бонус не начисляеться -------*/
             $old_order = Order::where('user_id', Auth::user()->id)->whereRaw('created_at > SUBDATE(now(), INTERVAL 1 HOUR)')->get();
-            
+
             $bonus_off = FALSE;
             foreach($old_order AS $order){
                 if($order->order_sum == (int)$cart_sum){
@@ -128,11 +128,11 @@ class CartController extends Controller
                 }
             }
             /*------------*/
-            
-           /* if (count($user_order) > 0 && count($user_order)%3==0 && !isset($_SESSION['add_present_action'])){
-                $_SESSION['present'][] = ["count" => "1","good" =>"16"];
-                $_SESSION['add_present_action'] = true;
-            }*/
+
+            /* if (count($user_order) > 0 && count($user_order)%3==0 && !isset($_SESSION['add_present_action'])){
+                 $_SESSION['present'][] = ["count" => "1","good" =>"16"];
+                 $_SESSION['add_present_action'] = true;
+             }*/
             $user_bonus = user_bonus::where('user_id',Auth::user()->id)->get()->first();
 
 
@@ -172,11 +172,11 @@ class CartController extends Controller
         if(Auth::check()){
             $data['user_id'] = Auth::user()->id;
         }
-        
+
         if ( !isset($data['email']) ){
             $data['email'] = '';
         }
-        
+
         if ( !isset($data['delivery_zone']) ){
             $data['delivery_zone'] = '';
         }
@@ -192,38 +192,38 @@ class CartController extends Controller
         }
         if (($data['pay_type_id'] == 1) || ($data['pay_type_id'] == 3)){
             $data['is_paid'] = true;
-            //session_unset();
+            session_unset();
         }
-        
-        
+
+
 
         $order = Order::create($data);
 
-       if(Auth::check()){
-           if (!$bonus_off) {
-               $str = 'Начисление бонусов за ваш заказ '.$order->order_id;
-               if($data['apply_bonus_sum']>0) $str .= ', за вычетом использованных '.$data['apply_bonus_sum'].' бонусов';
+        if(Auth::check()){
+            if (!$bonus_off) {
+                $str = 'Начисление бонусов за ваш заказ '.$order->order_id;
+                if($data['apply_bonus_sum']>0) $str .= ', за вычетом использованных '.$data['apply_bonus_sum'].' бонусов';
                 $order->getBonusLog()->create([
-                    'order_id' => $order->id, 
+                    'order_id' => $order->id,
                     'user_id' => $order->user_id,
                     'bonus' => $cach_back,
                     'notes' => $str
                 ]);
-           /* добавляю в лог выше. Может этот закомментированный блок вообще убрать.
-                 if(!empty($data['apply_bonus_sum']))
-                    if($data['apply_bonus_sum'] > 0){
-                    //логируем списание бонусов в счет оплаты заказа
-                        $order->getBonusLog()->create([
-                            'order_id' => $order->id,
-                            'user_id' => $order->user_id,
-                            'bonus' => (-1)*(int)$data['apply_bonus_sum'],
-                            'notes' => 'Списание бонусов в счет оплаты заказа '.$order->order_id,
-                        ]);
-                    }
-           */
-                    $referer = User::whereId(Auth::user()->referer_id)->first();
-                    $username = Auth::user()->name;
-                    if(!empty($referer->id)){
+                /* добавляю в лог выше. Может этот закомментированный блок вообще убрать.
+                      if(!empty($data['apply_bonus_sum']))
+                         if($data['apply_bonus_sum'] > 0){
+                         //логируем списание бонусов в счет оплаты заказа
+                             $order->getBonusLog()->create([
+                                 'order_id' => $order->id,
+                                 'user_id' => $order->user_id,
+                                 'bonus' => (-1)*(int)$data['apply_bonus_sum'],
+                                 'notes' => 'Списание бонусов в счет оплаты заказа '.$order->order_id,
+                             ]);
+                         }
+                */
+                $referer = User::whereId(Auth::user()->referer_id)->first();
+                $username = Auth::user()->name;
+                if(!empty($referer->id)){
                     //начислить бонусы рефереру за заказ реферала
                     $referal_order_percent = Setting::all()->find(1)->referal_order_percent;
                     $referer_bonus = user_bonus::whereUser_id($referer->id)->first()->bonus;
@@ -234,11 +234,11 @@ class CartController extends Controller
                         'order_id' => $order->id,
                         'user_id' => $referer->id,
                         'bonus' => (int)$referer_adding_bonus,
-                        'notes' => 'Начисление бонусов за заказ '.$order->order_id.'вашего реферала '.$username,
+                        'notes' => 'Начисление бонусов за заказ '.$order->order_id.' вашего реферала '.$username,
                     ]);
                 }
-           }
-       }        
+            }
+        }
         $return = array(
             'order_id' => $order->id,
             'order_sum' => $order->order_sum,
@@ -250,31 +250,31 @@ class CartController extends Controller
 
         /* for send mail */
         $order_mail = $return;
-        
+
         $pay = Pay_Type::find($order->pay_type_id);
         $delivery = Delivery_Type::find($order->delivery_type_id);
         $deliveryZone = Delivery_Zone::find($order->delivery_zone_id);
-          
+
         $order_mail['name'] = $data['name'];
         $order_mail['phone'] = $data['phone'];
         $order_mail['payment_type'] = $pay->title;
-        
+
         $order_mail['delivery_type_id'] = $order->delivery_type_id;
         $order_mail['delivery_type'] = $delivery->title;
-       // $order_mail['delivery_zone'] = $deliveryZone->title;
+        // $order_mail['delivery_zone'] = $deliveryZone->title;
         $order_mail['delivery_address'] = json_decode($order->delivery_address);
-        
+
         $order_mail['bonus'] = $order->bonus_sum;
         $order_mail['time'] = $request['extra']['time'];
         $order_mail['money'] = $request['extra']['money'];
         $order_mail['comment'] = $request['extra']['comment'];
-        
+
         $order_mail['goods'] = json_decode($order->good_list);
-        
+
         $order_mail['order_sum'] = $order->order_sum;
         $order_mail['bonus_sum'] = $order->bonus_sum;
         $order_mail['apply_bonus_sum'] = $order->apply_bonus_sum;
-       // print_r($order_mail);
+        // print_r($order_mail);
         /* END for send mail */
 //print_r($order_mail);exit();
         if ($data['pay_type_id'] == 1 || $data['pay_type_id'] == 3){
@@ -290,47 +290,47 @@ class CartController extends Controller
             self::SendSMS($data['phone'], $sms_messagedata);
         }
 //print_r($data);exit();
-        
+
         return json_encode($return);
     }
-    
+
     public function sensMessagePay(Request $request){
         $data = $request->except(['_token']);
-        
+
         $order_id = $data['order_id'];
-        
+
         $order = Order::where('id', $order_id)->get();
-        
+
         $pay = Pay_Type::find($order[0]->pay_type_id);
         $delivery = Delivery_Type::find($order[0]->delivery_type_id);
         $deliveryZone = Delivery_Zone::find($order[0]->delivery_zone_id);
-        
+
         $extra = json_decode($order[0]->extra);
         //print_r($extra);exit();
         $order_mail['name'] = $order[0]->name;
         $order_mail['phone'] = $order[0]->phone;
         $order_mail['payment_type'] = $pay->title;
-        
+
         $order_mail['delivery_type_id'] = $order[0]->delivery_type_id;
         $order_mail['delivery_type'] = $delivery->title;
-       // $order_mail['delivery_zone'] = $deliveryZone->title;
+        // $order_mail['delivery_zone'] = $deliveryZone->title;
         $order_mail['delivery_address'] = json_decode($order[0]->delivery_address);
-        
+
         $order_mail['bonus'] = $order[0]->bonus_sum;
         $order_mail['time'] = $extra->time;
         $order_mail['money'] = $extra->money;
         $order_mail['comment'] = $extra->comment;
-        
+
         $order_mail['goods'] = json_decode($order[0]->good_list);
-        
+
         $order_mail['order_sum'] = $order[0]->order_sum;
         $order_mail['bonus_sum'] = $order[0]->bonus_sum;
         $order_mail['apply_bonus_sum'] = $order[0]->apply_bonus_sum;
-        
+
         self::SendMail($order[0]->id, $order_mail);
-        
+
     }
-    
+
     public function approvedOrder(Request $request){
         $invoiceId = $request->InvoiceId;
         $TransactionId = $request->TransactionId;
@@ -351,7 +351,7 @@ class CartController extends Controller
     }
 
     public static function SendSMS($phone, $text){
-       $user_number = $phone;
+        $user_number = $phone;
         $sms_username = 'happyhttp';
         $sms_password = 'LbqEOC4JH';
         $sms_recipient = preg_replace('~[^0-9]+~','',$user_number);
@@ -377,10 +377,10 @@ class CartController extends Controller
         $_SESSION['sms_message'][] = '<iframe style="display:none;" src="http://212.124.121.186:9501/api?action=sendmessage&username='.$sms_username.'&password='.$sms_password.'&recipient='.$sms_recipient.'&messagetype=SMS:TEXT&originator='.$sms_originator.'&messagedata='.$text.'"></iframe>';
         //echo '<iframe style="display:none;" src="http://212.124.121.186:9501/api?action=sendmessage&username='.$sms_username.'&password='.$sms_password.'&recipient='.$sms_recipient.'&messagetype=SMS:TEXT&originator='.$sms_originator.'&messagedata='.$text.'"></iframe>';
         //echo '<iframe style="display:none;" src="http://kazinfoteh.org:9501/api?action=sendmessage&username='.$sms_username.'&password='.$sms_password.'&recipient='.$sms_recipient.'&messagetype=SMS:TEXT&originator='.$sms_originator.'&messagedata='.$text.'"></iframe>';
-       /* $ch = curl_init('http://kazinfoteh.org:9501/api');
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
-        curl_exec($ch);*/
+        /* $ch = curl_init('http://kazinfoteh.org:9501/api');
+         curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
+         curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
+         curl_exec($ch);*/
     }
 
     public static function SendMail($order_id, $order =''){
@@ -401,7 +401,7 @@ class CartController extends Controller
             $html .= 'Телефон: ' . $order['phone'] . "\n<br>";
 
             $html .= $delimiter;
-            
+
             $html .= 'Способ оплаты: ' . $order['payment_type'] . "\n<br>";
 
             $html .= $delimiter;
@@ -409,19 +409,19 @@ class CartController extends Controller
 
             if ($order['delivery_type_id'] == 2) {
                 //$html .= 'Район доставки: ' . $order['delivery_zone'] . "\n<br>";
-                
-               /* $html .= 'Улица: ' . $order['street'] . "\n";
-                $html .= 'Дом: ' . $order['house'] . "\n";
-                $html .= 'Квартира: ' . $order['apartment'] . "\n";
-                $html .= 'Подъезд: ' . $order['square'] . "\n";
-                $html .= 'Этаж: ' . $order['floor'] . "\n";
-                $html .= 'Код домофона: ' . $order['code'] . "\n";*/
-                
-             foreach ($order['delivery_address'] as $key => $addres) {
-                 $html .= $key.': ' . $addres . "\n<br>"; 
-             }
-                
-                
+
+                /* $html .= 'Улица: ' . $order['street'] . "\n";
+                 $html .= 'Дом: ' . $order['house'] . "\n";
+                 $html .= 'Квартира: ' . $order['apartment'] . "\n";
+                 $html .= 'Подъезд: ' . $order['square'] . "\n";
+                 $html .= 'Этаж: ' . $order['floor'] . "\n";
+                 $html .= 'Код домофона: ' . $order['code'] . "\n";*/
+
+                foreach ($order['delivery_address'] as $key => $addres) {
+                    $html .= $key.': ' . $addres . "\n<br>";
+                }
+
+
                 $html .= 'Когда доставить заказ: ' . $order['time'] . "\n<br>";
                 if ($order['money']) {
                     $html .= 'Нужна сдача с: ' . $order['money'] . "\n<br>";
@@ -432,19 +432,19 @@ class CartController extends Controller
             $html .= 'Комментарий: ' . $order['comment'] . "\n<br>";
 
             $html .= $delimiter;
-            
+
             foreach($order['goods'] as $good){
                 foreach($good as $value){
-                    
 
-                        
+
+
                     $html .= \App\Http\Controllers\View\ApiController::getGood($value->good->good_id)['title'] . ' x ' . $value->good->count . ' - ' . \App\Http\Controllers\View\ApiController::getPortionNameWithGood($value->good->size_id)->title . "\n<br>";
-               }
+                }
             }
 
             $html    .= $delimiter;
             $html    .= 'Сумма заказа: ' . $order['order_sum']. "\n<br>";
-            
+
             if(!empty($order['apply_bonus_sum'])) {
                 $html    .= 'Скидка: ' . $order['apply_bonus_sum']. "\n<br>";
             }
@@ -456,9 +456,9 @@ class CartController extends Controller
         else {
             $message = 'На сайте оформлен новый заказ. id заказа '.$order_id;
         }
-        
+
         //print_r($message);
-        
+
         mail($to, $subject, $message, $headers);
     }
 
@@ -625,26 +625,26 @@ class CartController extends Controller
                 foreach ($cart_v as $cart_v_i => $cart_v_v) {
                     //dump($cart_v_v);
                     //$cart_good[]=$cart_v_v['good'];
- /*!!! bav55*/      $cart_good[] = array("good_id" => $cart_v_v['good']["good_id"], "size_id" => (string)ApiController::getPortioninSezeId($cart_v_v['good']["size_id"])['portion']);
+                    /*!!! bav55*/      $cart_good[] = array("good_id" => $cart_v_v['good']["good_id"], "size_id" => (string)ApiController::getPortioninSezeId($cart_v_v['good']["size_id"])['portion']);
                     $cart_good_count[] = $cart_v_v['good']["count"];
                 }
             }
-			
-/*
-echo 'Товар в корзине<br>';
-dump($cart_good);
-dump($cart_good_count);
-*/
-if($finale){ //finale countdown before send order to frontPad
-    $cart_good_copy = $cart_good;
-    $cart_good_count_copy = $cart_good_count;
-    $_SESSION['frontpad'] = array();
-}
+
+            /*
+            echo 'Товар в корзине<br>';
+            dump($cart_good);
+            dump($cart_good_count);
+            */
+            if($finale){ //finale countdown before send order to frontPad
+                $cart_good_copy = $cart_good;
+                $cart_good_count_copy = $cart_good_count;
+                $_SESSION['frontpad'] = array();
+            }
             //Нормируем товар в акциях
             $act_good = array();
             $act_good_count = array();
             $act_repeat = array();
-            $act_id = array(); 
+            $act_id = array();
             $act_good_id_input = array(); //соотношение товар - ячейка
             $act_product_in_input_count = array(); //Колво товаров в инпуте
             $act_product_in_input_povtorenie_check = array(); //Включено ли повторение
@@ -658,7 +658,7 @@ if($finale){ //finale countdown before send order to frontPad
                         foreach ($sizes_id as $sizes_id_i => $sizes_id_v) {
                             $act_good[] = array("good_id" => (string)$good_id_v, "size_id" => (string)$sizes_id_v);
                             $act_good_count[] = $cood["count"];
-                            
+
                             $act_good_id_input[$action->id][(string)$good_id_v.'_'.(string)$sizes_id_v]=$act_i;
                             $act_product_in_input_count[$action->id][$act_i] = $cood["count"];
                             if(isset($cood["checkbox"])){
@@ -676,12 +676,12 @@ if($finale){ //finale countdown before send order to frontPad
             //dump($act_product_in_input_count);
             //dump($act_product_in_input_povtorenie_check);exit();
 //dd($act_good_id_input);
-/*
-            echo 'Товар в акциях<br>';
-            dump($act_good);
-			dump($act_good_count);
-			dump($act_repeat);
-*/
+            /*
+                        echo 'Товар в акциях<br>';
+                        dump($act_good);
+                        dump($act_good_count);
+                        dump($act_repeat);
+            */
 
             //Ищем совпадения товаров из корзины в акциях
             $mtch = array();
@@ -689,14 +689,14 @@ if($finale){ //finale countdown before send order to frontPad
             $mtch_cart_sum = array();
             $act_sum = array();
             $act_good_repeat = array();
-            
+
             foreach ($act_good as $act_good_i => $act_v) {
                 /*
                 echo '<br>Акция<br>';
                 dump($act_v);
                 */
                 $act_sum[$act_id[$act_good_i]][$act_v['good_id'].'_'.$act_v['size_id']]=(int)$act_good_count[$act_good_i];
-                
+
                 foreach ($cart_good as $cart_good_i => $cart_v) {
                     /*
                     echo '<br>Товар<br>';
@@ -706,19 +706,19 @@ if($finale){ //finale countdown before send order to frontPad
                     if ($act_v == $cart_v) {
                         //dump($cart_v);
                         //dump($act_v);
-/*echo "<br>cart_good_count - <br>";
-                        dump($cart_good_count);
-                        echo "<br>act_good_count - <br>";
-                        dump($act_good_count);*/
+                        /*echo "<br>cart_good_count - <br>";
+                                                dump($cart_good_count);
+                                                echo "<br>act_good_count - <br>";
+                                                dump($act_good_count);*/
                         if ($cart_good_count[$cart_good_i] >= $act_good_count[$act_good_i]) {
                             //echo $act_good_i.': '.$cart_good_count[$cart_good_i].'-----'.$act_good_count[$act_good_i].'<br>';////
                             $mtch[] = $act_id[$act_good_i];
                             //echo 'Найден товар - id: '.$cart_v['good_id'].', акция id - '.$act_id[$act_good_i].'<br>';
                             //$mtch_act_sum[$act_id[$act_good_i]][$cart_v['good_id'].'_'.$cart_v['size_id']]=(int)$act_good_count[$act_good_i]; //original string
-                            
-                            
+
+
                             $mtch_act_sum[$act_id[$act_good_i]][$act_good_id_input[$act_id[$act_good_i]][$cart_v['good_id'].'_'.$cart_v['size_id']]][$cart_v['good_id'].'_'.$cart_v['size_id']]=(int)$act_good_count[$act_good_i];
-                            
+
                             $act_good_repeat[$act_id[$act_good_i]][$cart_v['good_id'].'_'.$cart_v['size_id']]=$act_repeat[$act_good_i];
 
                             $mtch_cart_sum[$act_id[$act_good_i]][$cart_v['good_id'].'_'.$cart_v['size_id']]=array();
@@ -731,22 +731,22 @@ if($finale){ //finale countdown before send order to frontPad
                 }
             }
             //Акции, в которых товары найдены
-/*
-            echo 'Акции, в которых товары найдены<br>';
-            dump($mtch);
-            //Совпадения и количество по акциям
-            echo 'Совпадения и количество по акциям<br>';
-            dump($mtch_act_sum);
-            //Совпадения и количество по корзине
-            echo 'Совпадения и количество по корзине<br>';
-            dump($mtch_cart_sum);
-            //Нормированный массив всех акций
-            echo 'Нормированный массив всех акций<br>';
-            dump($act_sum);
-            //Флаг повторения
-            echo 'Флаг повторения<br>';
-            dump($act_good_repeat);
-*/
+            /*
+                        echo 'Акции, в которых товары найдены<br>';
+                        dump($mtch);
+                        //Совпадения и количество по акциям
+                        echo 'Совпадения и количество по акциям<br>';
+                        dump($mtch_act_sum);
+                        //Совпадения и количество по корзине
+                        echo 'Совпадения и количество по корзине<br>';
+                        dump($mtch_cart_sum);
+                        //Нормированный массив всех акций
+                        echo 'Нормированный массив всех акций<br>';
+                        dump($act_sum);
+                        //Флаг повторения
+                        echo 'Флаг повторения<br>';
+                        dump($act_good_repeat);
+            */
 
             /**/
             //Количество товаров в акциях
@@ -761,217 +761,217 @@ if($finale){ //finale countdown before send order to frontPad
                 //dump($act);
                 //dump($action);//товары
             }
-            
-            
-            
+
+
+
             /*echo 'Количество товаров в акциях:<br>';
             dump($act_count);
-            echo 'Стоимость товаров в акциях:<br>'; 
+            echo 'Стоимость товаров в акциях:<br>';
             dump($act_price);
             echo self::getCartSum()['sum'];  */
 
-$mtch_act_sum_itr=$mtch_act_sum;
-for($pp=0;$pp<=50;$pp++) {
-$mtch_act_sum=$mtch_act_sum_itr;
+            $mtch_act_sum_itr=$mtch_act_sum;
+            for($pp=0;$pp<=50;$pp++) {
+                $mtch_act_sum=$mtch_act_sum_itr;
 
-            /**/
-/*dump(array_unique($mtch));
-echo "act_count - <br>";
-dump($act_count);*/
+                /**/
+                /*dump(array_unique($mtch));
+                echo "act_count - <br>";
+                dump($act_count);*/
 
 
 //$act_count - кол-во товаров в акции
-            $ProductsInAction = array();
-            $ProductsInActionInputCountNow = array();
-            foreach (array_unique($mtch) as $mtch_i => $mtch_v) {
-                $j=0;
-                $mtch_cart_sum_res=$mtch_cart_sum;
-                $mtch_act_sum_res=$mtch_act_sum;
-                for ($i=0; $i < $act_count[$mtch_v]; $i++) {
-                    foreach ($act_sum[$mtch_v] as $act_sum_i => $act_sum_v) {
-                        if(isset($mtch_cart_sum[$mtch_v][$act_sum_i])) {
-                            foreach ($mtch_cart_sum[$mtch_v][$act_sum_i] as $mtch_cart_i => $mtch_cart_v) {
-                                //if($mtch_cart_v && $j<$act_count[$mtch_v] && isset($mtch_act_sum[$mtch_v][$act_sum_i])) {
-                                  if($mtch_cart_v && $j<$act_count[$mtch_v] && isset($mtch_act_sum[$mtch_v][$act_good_id_input[$mtch_v][$act_sum_i]][$act_sum_i])) {
-                                    /*if(in_array ($act_sum_i, $mtch_act_sum[$mtch_v])){*/
-                                      //echo key($mtch_act_sum[$mtch_v]);exit();
-                                        
-                                      $actionProductInput = $act_good_id_input[$mtch_v][$act_sum_i]; //ID инпута в акцие
-                                      
-                                      
-                                      $ProductsInActionInputCountNow[$mtch_v][$actionProductInput][] =  $act_sum_i;
-                                      
-                                      if(isset($ProductsInAction[$mtch_v]) && !isset($act_product_in_input_povtorenie_check[$mtch_v][$actionProductInput])){
-                                          $forCount = $ProductsInActionInputCountNow[$mtch_v][$actionProductInput];
-                                          $countNowProduct = count($forCount);
-                                          if($countNowProduct > $act_product_in_input_count[$mtch_v][$actionProductInput]){
-                                            if (array_key_exists($actionProductInput, $ProductsInAction[$mtch_v])) {
-                                              break;
+                $ProductsInAction = array();
+                $ProductsInActionInputCountNow = array();
+                foreach (array_unique($mtch) as $mtch_i => $mtch_v) {
+                    $j=0;
+                    $mtch_cart_sum_res=$mtch_cart_sum;
+                    $mtch_act_sum_res=$mtch_act_sum;
+                    for ($i=0; $i < $act_count[$mtch_v]; $i++) {
+                        foreach ($act_sum[$mtch_v] as $act_sum_i => $act_sum_v) {
+                            if(isset($mtch_cart_sum[$mtch_v][$act_sum_i])) {
+                                foreach ($mtch_cart_sum[$mtch_v][$act_sum_i] as $mtch_cart_i => $mtch_cart_v) {
+                                    //if($mtch_cart_v && $j<$act_count[$mtch_v] && isset($mtch_act_sum[$mtch_v][$act_sum_i])) {
+                                    if($mtch_cart_v && $j<$act_count[$mtch_v] && isset($mtch_act_sum[$mtch_v][$act_good_id_input[$mtch_v][$act_sum_i]][$act_sum_i])) {
+                                        /*if(in_array ($act_sum_i, $mtch_act_sum[$mtch_v])){*/
+                                        //echo key($mtch_act_sum[$mtch_v]);exit();
+
+                                        $actionProductInput = $act_good_id_input[$mtch_v][$act_sum_i]; //ID инпута в акцие
+
+
+                                        $ProductsInActionInputCountNow[$mtch_v][$actionProductInput][] =  $act_sum_i;
+
+                                        if(isset($ProductsInAction[$mtch_v]) && !isset($act_product_in_input_povtorenie_check[$mtch_v][$actionProductInput])){
+                                            $forCount = $ProductsInActionInputCountNow[$mtch_v][$actionProductInput];
+                                            $countNowProduct = count($forCount);
+                                            if($countNowProduct > $act_product_in_input_count[$mtch_v][$actionProductInput]){
+                                                if (array_key_exists($actionProductInput, $ProductsInAction[$mtch_v])) {
+                                                    break;
+                                                }
                                             }
-                                          }
-                                      }
-                                      
-                                      //echo "<br>ProductsInActionInputCountNow ($mtch_v)($actionProductInput) <br>";
-                                      if (isset($ProductsInActionInputCountNow[$mtch_v][$actionProductInput])){ 
-                                          $forCount = $ProductsInActionInputCountNow[$mtch_v][$actionProductInput];
-                                          $countNowProduct = count($forCount);
-                                          //echo "<br>countNowProduct ($mtch_v)($actionProductInput) = ".$countNowProduct."<br>";
-                                          if ($act_product_in_input_count[$mtch_v][$actionProductInput] > $countNowProduct) {
-                                              
-                                              
-                                          }
-                                          
-                                      }
-                                      $ProductsInAction[$mtch_v][$actionProductInput] = true;
-                                      
-                                      //echo "<br>ProductsInActionInputCountNow = <br>";
-                                      //dump($ProductsInActionInputCountNow);
-                                      
-                                      
-                                      /*foreach ($mtch_act_sum[$mtch_v] as $keyArrayActionInput => $znach ) {*/
-                                             
-                                            /* echo "<br> keyArrayActionInput =".$keyArrayActionInput."<br>";
-                                             echo "<br> znach = ";
-                                             print_r($znach);
-                                             echo"<br>";
-                                             echo "<br> act_sum_i =".$act_sum_i."<br>";*/
-                                          
-                                            /* if (array_key_exists($act_sum_i, $znach)) {
-                                              $ProductsInAction[$mtch_v][$keyArrayActionInput] = true;
-                                              $ProductsInActionInputCountNow[$mtch_v][$keyArrayActionInput][] =  $act_sum_i;
-                                              echo "<br> ProductsInActionInputCountNow  <br> ";
-                                              dump($ProductsInActionInputCountNow);
-                                              $keyArrayActionInput2 = $keyArrayActionInput;
-                                              echo "<br> keyArrayActionInput =".$keyArrayActionInput2."<br>";
-                                                 break;
-                                             }
-                                             
-                                            
-                                         }*/
-                                             //echo $mtch_v.' По акции  '.$mtch_v.' забираем товар '.$act_sum_i.' | <br>';
+                                        }
 
-                                             $mtch_cart_sum[$mtch_v][$act_sum_i][$mtch_cart_i]=0; 
-                                             $j++;
+                                        //echo "<br>ProductsInActionInputCountNow ($mtch_v)($actionProductInput) <br>";
+                                        if (isset($ProductsInActionInputCountNow[$mtch_v][$actionProductInput])){
+                                            $forCount = $ProductsInActionInputCountNow[$mtch_v][$actionProductInput];
+                                            $countNowProduct = count($forCount);
+                                            //echo "<br>countNowProduct ($mtch_v)($actionProductInput) = ".$countNowProduct."<br>";
+                                            if ($act_product_in_input_count[$mtch_v][$actionProductInput] > $countNowProduct) {
 
 
-                                             foreach ($mtch_cart_sum as $sum_i => $sum_v) {
-                                                 foreach ($mtch_cart_sum[$sum_i] as $sum_i1 => $sum_v1) {
-                                                     foreach ($mtch_cart_sum[$sum_i][$sum_i1] as $sum_i2 => $sum_v2) {
-                                                         if($sum_i!=$mtch_v && $act_sum_i==$sum_i1 && $mtch_cart_i==$sum_i2 ) {
-                                                             //echo $mtch_v.' Из акции  '.$sum_i.' удаляем товар '.$sum_i1.' | <br>';
-                                                             $mtch_cart_sum[$sum_i][$sum_i1][$sum_i2]=0; 
-                                                         }
-                                                     }
-                                                 }
-                                             }
+                                            }
+
+                                        }
+                                        $ProductsInAction[$mtch_v][$actionProductInput] = true;
+
+                                        //echo "<br>ProductsInActionInputCountNow = <br>";
+                                        //dump($ProductsInActionInputCountNow);
 
 
-                                             //echo 'Можно взять ещё такой же товар -'.$act_good_repeat[$mtch_v][$act_sum_i].'<br>';
-                                             if(!$act_good_repeat[$mtch_v][$act_sum_i]) {
-                                                 foreach($mtch_act_sum[$mtch_v] as $mtch_act_sum_i => $mtch_act_sum_v) {
-                                                             if($mtch_act_sum_i==$act_sum_i) {
-                                                                 //echo 'Удалить в '.$mtch_v.' - '.$mtch_act_sum_i.' | '.$act_sum_i.'<br>';
-                                                                         unset($mtch_act_sum[$mtch_v][$mtch_act_sum_i]);
-                                                         }
-                                                 }
-                                             }
+                                        /*foreach ($mtch_act_sum[$mtch_v] as $keyArrayActionInput => $znach ) {*/
 
-                                         
-                                  /* }*/
+                                        /* echo "<br> keyArrayActionInput =".$keyArrayActionInput."<br>";
+                                         echo "<br> znach = ";
+                                         print_r($znach);
+                                         echo"<br>";
+                                         echo "<br> act_sum_i =".$act_sum_i."<br>";*/
+
+                                        /* if (array_key_exists($act_sum_i, $znach)) {
+                                          $ProductsInAction[$mtch_v][$keyArrayActionInput] = true;
+                                          $ProductsInActionInputCountNow[$mtch_v][$keyArrayActionInput][] =  $act_sum_i;
+                                          echo "<br> ProductsInActionInputCountNow  <br> ";
+                                          dump($ProductsInActionInputCountNow);
+                                          $keyArrayActionInput2 = $keyArrayActionInput;
+                                          echo "<br> keyArrayActionInput =".$keyArrayActionInput2."<br>";
+                                             break;
+                                         }
+
+
+                                     }*/
+                                        //echo $mtch_v.' По акции  '.$mtch_v.' забираем товар '.$act_sum_i.' | <br>';
+
+                                        $mtch_cart_sum[$mtch_v][$act_sum_i][$mtch_cart_i]=0;
+                                        $j++;
+
+
+                                        foreach ($mtch_cart_sum as $sum_i => $sum_v) {
+                                            foreach ($mtch_cart_sum[$sum_i] as $sum_i1 => $sum_v1) {
+                                                foreach ($mtch_cart_sum[$sum_i][$sum_i1] as $sum_i2 => $sum_v2) {
+                                                    if($sum_i!=$mtch_v && $act_sum_i==$sum_i1 && $mtch_cart_i==$sum_i2 ) {
+                                                        //echo $mtch_v.' Из акции  '.$sum_i.' удаляем товар '.$sum_i1.' | <br>';
+                                                        $mtch_cart_sum[$sum_i][$sum_i1][$sum_i2]=0;
+                                                    }
+                                                }
+                                            }
+                                        }
+
+
+                                        //echo 'Можно взять ещё такой же товар -'.$act_good_repeat[$mtch_v][$act_sum_i].'<br>';
+                                        if(!$act_good_repeat[$mtch_v][$act_sum_i]) {
+                                            foreach($mtch_act_sum[$mtch_v] as $mtch_act_sum_i => $mtch_act_sum_v) {
+                                                if($mtch_act_sum_i==$act_sum_i) {
+                                                    //echo 'Удалить в '.$mtch_v.' - '.$mtch_act_sum_i.' | '.$act_sum_i.'<br>';
+                                                    unset($mtch_act_sum[$mtch_v][$mtch_act_sum_i]);
+                                                }
+                                            }
+                                        }
+
+
+                                        /* }*/
+                                    }
                                 }
+
                             }
-                            
-                        }
 
-                    }
-                }
-
-                //не хватает товаров для акции
-                if($j<$act_count[$mtch_v]) {
-                    foreach($mtch as $mtch_i1 => $mtch_v1) {
-                        if($mtch_v1==$mtch_v) {
-                            unset($mtch[$mtch_i1]);
-                            $mtch_cart_sum=$mtch_cart_sum_res;
-                            $mtch_act_sum=$mtch_act_sum_res;
                         }
                     }
-                    //echo 'Акция  '.$mtch_v.' не прошла, откат массива <br>';
-                }
-                else {
-                   /* echo "j = ".$j."<br>";
-                    echo "act_count mtch_v - ".$act_count[$mtch_v]."<br>";
-                    echo 'Акция  '.$mtch_v.' ПРОХОДИТ<br>ProductsInActionInputCountNow<br>';
-                    dump($ProductsInActionInputCountNow);
-                   */
-                    if($finale){ //finale countdown before send order to frontPad
-                        $cur_action = Action::all()->find($mtch_v);
-                        $action_frontpadArticle = $cur_action->frontpad_article;
-                        $action_frontpadPrice = $cur_action->frontpad_price;
-                        $_SESSION['frontpad']['products'][] = $action_frontpadArticle;
-                        $product_key = count($_SESSION['frontpad']['products']) - 1;
-                        $_SESSION['frontpad']['product_kol'][$product_key] = 1;
-                        $_SESSION['frontpad']['product_price'][$product_key] = $action_frontpadPrice;
-                        foreach($ProductsInActionInputCountNow[$cur_action->id][1] as $key => $product_str){
-                            $product = explode('_',$product_str);
-                            $gsp = Good_Size_Price::select('good_id', 'portion_id', 'frontpad_article')->whereGood_idAndPortion_id($product[0], $product[1])->first();
-                            $gsp_frontpadArticle = $gsp->frontpad_article;
-                            //add a product to array and as modificator
-                            $_SESSION['frontpad']['products'][] = $gsp_frontpadArticle;
-                            $product_key2 = count($_SESSION['frontpad']['products']) - 1;
-                            $_SESSION['frontpad']['product_kol'][$product_key2] = 1;
-                            $_SESSION['frontpad']['product_price'][$product_key2] = 0;
-                            $_SESSION['frontpad']['product_mod'][$product_key2] = $product_key;
-                            foreach($cart_good_copy as $key_good => $cart_good){
-                                if($cart_good['good_id'] == $product[0] && $cart_good['size_id'] == $product[1]){
-                                    $count_good = $cart_good_count_copy[$key_good];
-                                    if($count_good > 0) $cart_good_count_copy[$key_good]-=1;
-                                    else unset($cart_good_count_copy[$key_good]);
-                                }
+
+                    //не хватает товаров для акции
+                    if($j<$act_count[$mtch_v]) {
+                        foreach($mtch as $mtch_i1 => $mtch_v1) {
+                            if($mtch_v1==$mtch_v) {
+                                unset($mtch[$mtch_i1]);
+                                $mtch_cart_sum=$mtch_cart_sum_res;
+                                $mtch_act_sum=$mtch_act_sum_res;
                             }
                         }
+                        //echo 'Акция  '.$mtch_v.' не прошла, откат массива <br>';
+                    }
+                    else {
+                        /* echo "j = ".$j."<br>";
+                         echo "act_count mtch_v - ".$act_count[$mtch_v]."<br>";
+                         echo 'Акция  '.$mtch_v.' ПРОХОДИТ<br>ProductsInActionInputCountNow<br>';
+                         dump($ProductsInActionInputCountNow);
+                        */
+                        if($finale){ //finale countdown before send order to frontPad
+                            $cur_action = Action::all()->find($mtch_v);
+                            $action_frontpadArticle = $cur_action->frontpad_article;
+                            $action_frontpadPrice = $cur_action->frontpad_price;
+                            $_SESSION['frontpad']['products'][] = $action_frontpadArticle;
+                            $product_key = count($_SESSION['frontpad']['products']) - 1;
+                            $_SESSION['frontpad']['product_kol'][$product_key] = 1;
+                            $_SESSION['frontpad']['product_price'][$product_key] = $action_frontpadPrice;
+                            foreach($ProductsInActionInputCountNow[$cur_action->id][1] as $key => $product_str){
+                                $product = explode('_',$product_str);
+                                $gsp = Good_Size_Price::select('good_id', 'portion_id', 'frontpad_article')->whereGood_idAndPortion_id($product[0], $product[1])->first();
+                                $gsp_frontpadArticle = $gsp->frontpad_article;
+                                //add a product to array and as modificator
+                                $_SESSION['frontpad']['products'][] = $gsp_frontpadArticle;
+                                $product_key2 = count($_SESSION['frontpad']['products']) - 1;
+                                $_SESSION['frontpad']['product_kol'][$product_key2] = 1;
+                                $_SESSION['frontpad']['product_price'][$product_key2] = 0;
+                                $_SESSION['frontpad']['product_mod'][$product_key2] = $product_key;
+                                foreach($cart_good_copy as $key_good => $cart_good){
+                                    if($cart_good['good_id'] == $product[0] && $cart_good['size_id'] == $product[1]){
+                                        $count_good = $cart_good_count_copy[$key_good];
+                                        if($count_good > 0) $cart_good_count_copy[$key_good]-=1;
+                                        else unset($cart_good_count_copy[$key_good]);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    //dump($mtch_cart_sum);
+
+                }
+
+
+                /* echo 'После обработки:<br>';
+                 dump($mtch_cart_sum);
+                 dump($mtch);
+                 dump($mtch_act_sum);
+                 */
+
+                //Расчёт антикорзины
+                if(!isset($act_cart)) $act_cart = array();
+                //dump($mtch);
+                $frontpad_array = array();
+                foreach (array_unique($mtch) as $mtch_i => $mtch_v) {
+                    // echo 'anti-cart:foreach => $mtch_i='.$mtch_i.', $mtch_v='.$mtch_v.'\n';
+                    $action_obj = Action::all()->find($mtch_v);
+                    $_SESSION['action_title'][] = $action_obj->title;
+                    if ($action_obj->is_sum == true) {
+                        // echo 'сумма';
+                        // echo $action_obj->total;
+                        $act_cart[] = $act_price[$mtch_v] - ($action_obj->total);
+                    } elseif ($action_obj->is_percent == true) {
+                        //echo 'Процент';
+                        //echo $action->total;
+                        $act_cart[] = $act_price[$mtch_v] - $act_price[$mtch_v] * ($action_obj->total) / 100;
+                    } elseif ($action_obj->is_present == true) {
+                        //echo 'Подарок';
+                        //echo $action->total;
+                        $act_cart[] = 0;
+                        $_SESSION['present'][] = json_decode($action_obj->total, true);
+
                     }
                 }
-                //dump($mtch_cart_sum);
+                if(count($mtch) == 0) break;
+
 
             }
-
-
-           /* echo 'После обработки:<br>';
-            dump($mtch_cart_sum);
-            dump($mtch);
-            dump($mtch_act_sum);
-            */
-
-            //Расчёт антикорзины
-            if(!isset($act_cart)) $act_cart = array();
-    //dump($mtch);
-            $frontpad_array = array();
-            foreach (array_unique($mtch) as $mtch_i => $mtch_v) {
-               // echo 'anti-cart:foreach => $mtch_i='.$mtch_i.', $mtch_v='.$mtch_v.'\n';
-                $action_obj = Action::all()->find($mtch_v);
-                $_SESSION['action_title'][] = $action_obj->title;
-                if ($action_obj->is_sum == true) {
-                   // echo 'сумма';
-                   // echo $action_obj->total;
-                    $act_cart[] = $act_price[$mtch_v] - ($action_obj->total);
-                } elseif ($action_obj->is_percent == true) {
-                    //echo 'Процент';
-                    //echo $action->total;
-                    $act_cart[] = $act_price[$mtch_v] - $act_price[$mtch_v] * ($action_obj->total) / 100;
-                } elseif ($action_obj->is_present == true) {
-                    //echo 'Подарок';
-                    //echo $action->total;
-                    $act_cart[] = 0;
-                    $_SESSION['present'][] = json_decode($action_obj->total, true);
-                    
-                }
-            }
-            if(count($mtch) == 0) break;
-           
-
-}           
             /*--- Добавление доп подарков в зависимости от заказов ---*/
-            //$action_pickup_obj = ActionPickup::all()->find(1); 
+            //$action_pickup_obj = ActionPickup::all()->find(1);
             /*$action_pickup_obj = ActionPickup::all();
             foreach ($action_pickup_obj as $pickup) {
            //dd($pickup->id);exit();
@@ -980,8 +980,8 @@ dump($act_count);*/
                      $_SESSION['present'][] = json_decode($pickup->total, true);
                 }
             }*/
-            
-           
+
+
             /*--- End ---*/
             if($finale){
                 //add products without actions into frontpad
@@ -1075,4 +1075,4 @@ dump($act_count);*/
 
 
 }
-			
+
