@@ -76,19 +76,7 @@ class RegisterController extends Controller
         $user->password = bcrypt($data['password']);
         if(isset($data['referer_id']) && User::find($data['referer_id']))   $user->referer_id = $data['referer_id'];
         $user->save();
-        //Добавим бонусы рефереру за регистрацию по его партнерской ссылке
-        $referer_bonus_sum = Setting::all()->find(1)->referer_bonus_sum;
-        $user_bonus = user_bonus::where('user_id',$user->referer_id)->get()->first();
-        $bonus_exist = isset($user_bonus->bonus)? (int)$user_bonus->bonus : 0;
-        $new_sum_bonus = $bonus_exist + $referer_bonus_sum;
-        user_bonus::updateOrCreate(['user_id' => $user->referer_id],['bonus' => $new_sum_bonus]);
-        //запишем информацию в журнал
-        Bonus_Log::create([
-            'order_id' => 0,
-            'user_id' => $user->referer_id,
-            'bonus' => $referer_bonus_sum,
-            'notes' => 'Начисление бонусов за регистрацию по партнерской ссылке (пользователь: '.$user->name.')',//.' ('.$user->phone.')',
-        ]);
+
 
 
         /* присвоение роли "клиент" для нового пользователя */

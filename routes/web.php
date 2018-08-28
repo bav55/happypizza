@@ -123,6 +123,7 @@ Route::get('api/custom-good-save', 'View\ApiController@customGoodSave');
 Route::delete('api/custom-good-remove', 'View\ApiController@customGoodRemove');
 Route::post('api/mail-send', 'View\ApiController@sendMail');
 Route::post('api/vacancies', 'View\ApiController@vacanciesSend')->name('vacanciesSend');
+Route::get('api/apply_bonus', 'View\ApiController@applyBonus')->name('applyBonus');
 /* api route */
 
 //Route::get('abc', function (){

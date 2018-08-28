@@ -15,6 +15,7 @@ class AddColumnInActions extends Migration
     {
         Schema::table('bonus_log', function ($table) {
             $table->string('notes')->nullable();
+            $table->integer('referal_id')->nullable();
             $table->timestamps();
         });
     }
