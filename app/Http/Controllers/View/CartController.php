@@ -886,21 +886,23 @@ class CartController extends Controller
                             $product_key = count($_SESSION['frontpad']['products']) - 1;
                             $_SESSION['frontpad']['product_kol'][$product_key] = 1;
                             $_SESSION['frontpad']['product_price'][$product_key] = $action_frontpadPrice;
-                            foreach($ProductsInActionInputCountNow[$cur_action->id][1] as $key => $product_str){
-                                $product = explode('_',$product_str);
-                                $gsp = Good_Size_Price::select('good_id', 'portion_id', 'frontpad_article')->whereGood_idAndPortion_id($product[0], $product[1])->first();
-                                $gsp_frontpadArticle = $gsp->frontpad_article;
-                                //add a product to array and as modificator
-                                $_SESSION['frontpad']['products'][] = $gsp_frontpadArticle;
-                                $product_key2 = count($_SESSION['frontpad']['products']) - 1;
-                                $_SESSION['frontpad']['product_kol'][$product_key2] = 1;
-                                $_SESSION['frontpad']['product_price'][$product_key2] = 0;
-                                $_SESSION['frontpad']['product_mod'][$product_key2] = $product_key;
-                                foreach($cart_good_copy as $key_good => $cart_good){
-                                    if($cart_good['good_id'] == $product[0] && $cart_good['size_id'] == $product[1]){
-                                        $count_good = $cart_good_count_copy[$key_good];
-                                        if($count_good > 0) $cart_good_count_copy[$key_good]-=1;
-                                        else unset($cart_good_count_copy[$key_good]);
+                            foreach($ProductsInActionInputCountNow[$cur_action->id] as $key => $product_str) {
+                                foreach($product_str as $key2 => $product_str2){
+                                    $product = explode('_', $product_str2);
+                                    $gsp = Good_Size_Price::select('good_id', 'portion_id', 'frontpad_article')->whereGood_idAndPortion_id($product[0], $product[1])->first();
+                                    $gsp_frontpadArticle = $gsp->frontpad_article;
+                                    //add a product to array and as modificator
+                                    $_SESSION['frontpad']['products'][] = $gsp_frontpadArticle;
+                                    $product_key2 = count($_SESSION['frontpad']['products']) - 1;
+                                    $_SESSION['frontpad']['product_kol'][$product_key2] = 1;
+                                    $_SESSION['frontpad']['product_price'][$product_key2] = 0;
+                                    $_SESSION['frontpad']['product_mod'][$product_key2] = $product_key;
+                                    foreach ($cart_good_copy as $key_good => $cart_good) {
+                                        if ($cart_good['good_id'] == $product[0] && $cart_good['size_id'] == $product[1]) {
+                                            $count_good = $cart_good_count_copy[$key_good];
+                                            if ($count_good > 0) $cart_good_count_copy[$key_good] -= 1;
+                                            else unset($cart_good_count_copy[$key_good]);
+                                        }
                                     }
                                 }
                             }
