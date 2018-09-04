@@ -16,6 +16,7 @@ class AddColumnInActions extends Migration
         Schema::table('orders', function ($table) {
             $table->integer('frontpad_order_id')->nullable();
             $table->integer('frontpad_order_number')->nullable();
+            $table->integer('operator_id')->nullable();
         });
     }
 

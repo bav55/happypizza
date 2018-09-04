@@ -32,8 +32,9 @@ Route::group(['prefix' => 'ip5woctv9f990lc'], function() {
         Route::resource('review', 'Superadmin\ReviewController', ['middleware' => 'role:superadmin', 'only' => ['index','create','destroy','edit','update','store']] );
         
         Route::resource('bonuslog', 'Superadmin\BonusLogController', ['middleware' => 'role:superadmin', 'only' => ['index','create','destroy','edit','update','store']] );
-        Route::resource('user', 'Superadmin\UserController', ['middleware' => 'role:superadmin', 'only' => ['index','create','destroy','edit','update','store']] );
-        
+        Route::get('clients', 'Superadmin\UserController@get_clients', ['middleware' => 'role:superadmin', 'only' => ['index','create','destroy','edit','update','store']] )->name('get_clients');
+        Route::resource('operators', 'Superadmin\OperatorController', ['middleware' => 'role:superadmin', 'only' => ['index','create','destroy','edit','update','store']] );
+
         Route::resource('action', 'Superadmin\ActionController', ['middleware' => 'role:superadmin', 'only' => ['index','create','destroy','edit','update','store','show']] );
         
         Route::resource('action-pickup', 'Superadmin\ActionPickupController', ['middleware' => 'role:superadmin', 'only' => ['index','create','destroy','edit','update','store','show']] );

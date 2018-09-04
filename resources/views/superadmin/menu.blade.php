@@ -62,8 +62,13 @@
     </a>
 </li>
 <li class="nav-item" data-toggle="tooltip" data-placement="right">
-    <a class="nav-link" href="{{ route('home') }}">
-        <i class="fa fa-fw fa-users"></i><span class="nav-link-text"> Пользователи</span>
+    <a class="nav-link" href="{{ route('get_clients') }}">
+        <i class="fa fa-fw fa-users"></i><span class="nav-link-text"> Клиенты</span>
+    </a>
+</li>
+<li class="nav-item" data-toggle="tooltip" data-placement="right">
+    <a class="nav-link" href="{{ route('operators.index') }}">
+        <i class="fa fa-fw fa-users"></i><span class="nav-link-text"> Операторы</span>
     </a>
 </li>
 <li class="nav-item" data-toggle="tooltip" data-placement="right">

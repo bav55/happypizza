@@ -96,7 +96,8 @@ class User extends Authenticatable
     }
     
      public function phone()
-  {
-    return $this->hasOne('App\Phone');
-  }
+     {
+         return $this->hasOne('App\Phone');
+    }
+
 }
