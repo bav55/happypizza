@@ -1839,3 +1839,13 @@ p.read-more:hover {cursor: pointer;}
 .ya-share2__item{
   margin-bottom: 5px!important;
 }
+.client-search{
+  margin-top: 22px;
+}
+.client-alert{
+  padding-top: 16px;
+  position: absolute;
+  top: 123px;
+  left: 70px;
+  display: none;
+}

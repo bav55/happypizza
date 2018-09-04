@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\View;
 use App\User;
+use App\Models\Role;
 use App\Models\Delivery_Type;
 use App\Models\Delivery_Zone;
 use App\Models\Order;
@@ -38,7 +39,8 @@ class CartController extends Controller
             $delivery = Delivery_Type::all();
             $pay = Pay_Type::all();
             $bonus = self::getUserBonus();
-            return view('view.checkout', compact('delivery', 'pay', 'bonus'));
+            $operators = Role::find(2)->users()->get();
+            return view('view.checkout', compact('delivery', 'pay', 'bonus','operators'));
         }
         else {
             return Redirect::route('cart');
@@ -1003,8 +1005,9 @@ class CartController extends Controller
             }
         }
         //now, create POST-query to API FrontPad for create an order into FrontPad
+        $frontpad_apikey = Setting::all()->find(1)->frontpad_apikey;
         $client_param = array(
-            'secret' => 'ihYN4HbYFGnGkdhB4ezbhBG7KsTQr4ZDaGb4deKHN3d35nnYyNZEbsBNKfr49as9Gy4NBDhbrn4hEe52TQsY7SyF3Ny2QQ2i8QZze7ByhsFQzzBe9S37AiBkZZaBA2KyDyTGrf5BAzbZTE4TiSQH5dYR4YdnHQKa9tGnDBR32SNGhErti54b8NS2zZb7AN7z7ENz5riS82kfsDBDysEt6ies7hktYfSRNtbFKniGazQs3dThzkDrzHHtSY',
+            'secret' => $frontpad_apikey,
             'name' => $data['name'],
             'phone' => $data['phone'],
             'mail' => $data['email'],

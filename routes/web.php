@@ -118,6 +118,7 @@ Route::get('approved', 'View\CartController@approvedOrder');
 
 /* api route */
 Route::get('api/portion', 'View\ApiController@getPortionSizePrice');
+Route::get('api/check-client', 'View\ApiController@checkClient')->name('checkClient');
 Route::get('api/portion-reprice', 'View\ApiController@goodReprice');
 Route::get('api/constructor/{id}', 'View\ApiController@getConstractData');
 Route::get('api/custom-good-save', 'View\ApiController@customGoodSave');

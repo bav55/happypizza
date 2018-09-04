@@ -15,6 +15,7 @@ class AddColumnSetting2 extends Migration
     {
         Schema::table('settings', function ($table) {
             $table->integer('bonus_percent')->default('0');
+            $table->string('frontpad_apikey')->default('');
         });
     }
 

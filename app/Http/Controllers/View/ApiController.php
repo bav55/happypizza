@@ -381,8 +381,9 @@ class ApiController extends Controller
         //dd($todayOrders);
         foreach($todayOrders as $key => $order){
             //проверить статус заказа во frontpad
+            $frontpad_apikey = Setting::all()->find(1)->frontpad_apikey;
             $param = [
-                'secret' => 'ihYN4HbYFGnGkdhB4ezbhBG7KsTQr4ZDaGb4deKHN3d35nnYyNZEbsBNKfr49as9Gy4NBDhbrn4hEe52TQsY7SyF3Ny2QQ2i8QZze7ByhsFQzzBe9S37AiBkZZaBA2KyDyTGrf5BAzbZTE4TiSQH5dYR4YdnHQKa9tGnDBR32SNGhErti54b8NS2zZb7AN7z7ENz5riS82kfsDBDysEt6ies7hktYfSRNtbFKniGazQs3dThzkDrzHHtSY',
+                'secret' => $frontpad_apikey,
                 'order_id' => $order->frontpad_order_id,
                 ];
             $data = '';
@@ -449,5 +450,33 @@ class ApiController extends Controller
             }
         }
         return('Бонусные баллы по партнерской программе обновлены.');
+    }
+    public function checkClient(Request $request){ //check client from Frontpad and site clients
+        $phone = $request->get('client-phone');
+        $frontpad_apikey = Setting::all()->find(1)->frontpad_apikey;
+        $param = [
+            'secret' => $frontpad_apikey,
+            'client_phone' => urlencode($phone),
+        ];
+        $data = '';
+        foreach ($param as $key => $value) {
+            $data .= "&".$key."=".$value;
+        }
+        //dd($data);
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, "https://app.frontpad.ru/api/index.php?get_client");
+        curl_setopt($ch, CURLOPT_FAILONERROR, 1);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER,1);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_HEADER, false);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+        $result = curl_exec($ch);
+        curl_close($ch);
+        $arr_result = json_decode($result, true);
+        //dd($arr_result);
+        return $result;
     }
 }
