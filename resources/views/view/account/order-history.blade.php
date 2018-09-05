@@ -24,12 +24,21 @@
                                     <tr>
                                         <th>№ заказа</th>
                                         <th>Дата</th>
+                                        <th>Примечание</th>
                                         <th>Детали заказа</th>
                                     </tr>
                                     </thead>
                                     <tbody>
                                     @foreach($orders as $order)
-                                    <tr><td>{{ $order->order_id }}</td><td>{{ \Carbon\Carbon::parse($order->created_at)->format('d.m.Y H:i') }}</td><td><a href="{{ route('showOrder',$order->id) }}">Смотреть</a></td></tr>
+                                    <tr><td>{{ $order->order_id }}</td>
+                                        <td>{{ \Carbon\Carbon::parse($order->created_at)->format('d.m.Y H:i') }}</td>
+                                        <td>
+                                            @if($order->operator_id != '') Заказ через оператора<br/><small>Бонусы не начисляются</small>
+                                            @else Заказ через сайт <br/><small>Начислены бонусы</small>
+                                            @endif
+                                        </td>
+                                        <td><a href="{{ route('showOrder',$order->id) }}">Смотреть</a>
+                                        </td></tr>
                                     @endforeach
                                     </tbody>
                                 </table>

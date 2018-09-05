@@ -117,7 +117,7 @@ class CartController extends Controller
         /*--- End ---*/
 
 
-        if(Auth::check()){
+        if(Auth::check() && Auth::user()->hasRole('client')){
 
             $user_order = Order::where('user_id', Auth::user()->id)->where('delivery_type_id','1')->get();
             /*----- Если заказывает в течения 1 час на одну и туже сумму, бонус не начисляеться -------*/
@@ -157,7 +157,7 @@ class CartController extends Controller
                 $data['bonus_sum'] = $user_bonus->bonus;
             }
 
-            if ($data['pay_type_id'] == 1 || $data['pay_type_id'] == 3){
+            if (($data['pay_type_id'] == 1 || $data['pay_type_id'] == 3) && Auth::user()->hasRole('client')){
                 user_bonus::updateOrCreate(['user_id' => $user_bonus->user_id],['bonus' => $data['bonus_sum']]);
             }
         }
@@ -171,7 +171,7 @@ class CartController extends Controller
             $data['present_list'] = json_encode($_SESSION['present']);
         }
         $data['extra'] = json_encode($data['extra']);
-        if(Auth::check()){
+        if(Auth::check() && Auth::user()->hasRole('client')){
             $data['user_id'] = Auth::user()->id;
         }
 
@@ -201,7 +201,7 @@ class CartController extends Controller
 
         $order = Order::create($data);
 
-        if(Auth::check()){
+        if(Auth::check() && Auth::user()->hasRole('client')){
             if (!$bonus_off) {
                 $str = 'Начисление бонусов за ваш заказ '.$order->order_id;
                 if(isset($data['apply_bonus_sum']) && $data['apply_bonus_sum']>0) $str .= ', за вычетом использованных '.$data['apply_bonus_sum'].' бонусов';
@@ -258,7 +258,7 @@ class CartController extends Controller
             self::SendMail($order->id, $order_mail);
         }
 
-        if (Auth::check() && ($data['pay_type_id'] == 1 || $data['pay_type_id'] == 3)){
+        if (Auth::check() && ($data['pay_type_id'] == 1 || $data['pay_type_id'] == 3) && Auth::user()->hasRole('client')){
             $sms_messagedata = 'Ваш+заказ+'.$order->order_id.'+оформлен+на+сайте+happypizza.kz.Зачислено'.$cach_back.'+баллов.+Всего+'.$order->bonus_sum.'+баллов.';
             self::SendSMS($data['phone'], $sms_messagedata);
         }

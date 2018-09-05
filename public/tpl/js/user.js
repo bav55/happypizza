@@ -34,7 +34,8 @@ var register_id = '#registration-modal';
 function validate_registrate() {
     var errors = false;
     $(register_id + ' input').each(function () {
-        if ($(this).val() == ''){
+        //console.log($(this));
+        if ($(this).val() == '' && $(this).attr('name') != 'referer_id'){
             register_error($(this).attr('name'), 'поле обязательное для заполнения');
             errors = true;
         }

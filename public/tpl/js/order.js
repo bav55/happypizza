@@ -98,7 +98,7 @@ $(document).ready(function () {
         var form = $(this);
         op_select = $('#operator-select');
         if(op_select.length > 0){
-            $('#comment').val($('#comment').val()+'; '+'Заказ оформил: '+$('#operator-select').val());
+            $('#comment').val($('#comment').val()+'; '+'Заказ оформил: '+$('#operator-select option:selected').text());
         }
         var $checkoutSuccess = $('#cart-success');
         form.find('.has-error').removeClass('has-error');

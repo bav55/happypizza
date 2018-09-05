@@ -27,7 +27,7 @@
                                     <label for="operator-select">Выберите оператора для заказа</label>
                                     <select class="form-control" id="operator-select" name="operator_id">
                                         @foreach($operators as $operator)
-                                            <option value="{{ $operator->name }}">{{ $operator->name }}</option>
+                                            <option value="{{ $operator->id }}">{{ $operator->name }}</option>
                                         @endforeach
                                     </select>
                                 </div>

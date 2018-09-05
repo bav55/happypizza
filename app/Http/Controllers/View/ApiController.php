@@ -377,7 +377,7 @@ class ApiController extends Controller
     }
     public static function applyBonus(Request $request){
         //get orders from today with Forntpad_order_id
-        $todayOrders = Order::where('created_at', '>=', date('Y-m-d').' 00:00:00')->whereNotNull('frontpad_order_id')->get();
+        $todayOrders = Order::where('created_at', '>=', date('Y-m-d').' 00:00:00')->whereNotNull('frontpad_order_id')->whereNull('operator_id')->get();
         //dd($todayOrders);
         foreach($todayOrders as $key => $order){
             //проверить статус заказа во frontpad
