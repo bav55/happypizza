@@ -143,6 +143,17 @@
                                 </div>
                                 <hr>
                                 <fieldset class="form-group">
+                                    <label>Показывать на сайте?</label>
+                                    <div class="row">
+                                        <div class="form-check col-3">
+                                            <label class="form-check-label">
+                                                <input type="radio" class="form-check-input" name="activation" id="activation" value="1" > Да</label>
+                                        </div>
+                                        <div class="form-check col-3">
+                                            <label class="form-check-label">
+                                                <input type="radio" class="form-check-input" name="activation" id="activation" value="0" > Нет</label>
+                                        </div>
+                                    </div>
                                     <label>Популярный?</label>
                                     <div class="row">
                                         <div class="form-check col-3">

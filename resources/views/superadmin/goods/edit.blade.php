@@ -298,7 +298,7 @@
                                 </div>
                                 <hr>
                                 <fieldset class="form-group">
-                                    <label>Активность?</label>
+                                    <label>Показывать на сайте?</label>
                                     <div class="row">
                                         <div class="form-check col-3">
                                             <label class="form-check-label">

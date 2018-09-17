@@ -40,7 +40,9 @@
                     <div id="menu-list" class="is-full menu-list-block">
                         <div class="row menu-list-row">
                             @foreach($goods as $good)
-                                @include('view.blocks.good-block')
+                                @if($good->activation == 1)
+                                    @include('view.blocks.good-block')
+                                @endif
                             @endforeach
                         </div>
                     </div>
